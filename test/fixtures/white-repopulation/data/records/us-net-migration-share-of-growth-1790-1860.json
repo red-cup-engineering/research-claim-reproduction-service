@@ -1,0 +1,63 @@
+{
+  "kind": "lenticule.science.demography.growth-components.v1",
+  "status": "reported-secondary-series",
+  "compiled_date": "2026-10-17",
+  "population": "Retrospective United States statistical population (all residents counted by the historical series); not white-specific, not local, not lineage-based.",
+  "measure": "Net international migration as a percentage of total national population growth over each interval.",
+  "source_label": "Haines 2006 Table Aa15-Aa21",
+  "source": {
+    "title": "Michael R. Haines, 'Population characteristics', Historical Statistics of the United States, Millennial Edition, Table Aa15-21: Population, by components of change, 1790-2000",
+    "publisher": "Cambridge University Press",
+    "year": 2006,
+    "url": "https://hsus.cambridge.org/HSUSWeb/toc/treeTablePathIdAa15-21.html",
+    "read_status": "table values transcribed from the publisher's table; component definitions read"
+  },
+  "intervals": [
+    {
+      "start_year": 1790,
+      "end_year": 1800,
+      "net_migration_share_total_growth_pct": 11.9
+    },
+    {
+      "start_year": 1800,
+      "end_year": 1810,
+      "net_migration_share_total_growth_pct": 13.5
+    },
+    {
+      "start_year": 1810,
+      "end_year": 1820,
+      "net_migration_share_total_growth_pct": 13.7
+    },
+    {
+      "start_year": 1820,
+      "end_year": 1830,
+      "net_migration_share_total_growth_pct": 7.1
+    },
+    {
+      "start_year": 1830,
+      "end_year": 1840,
+      "net_migration_share_total_growth_pct": 16.9
+    },
+    {
+      "start_year": 1840,
+      "end_year": 1850,
+      "net_migration_share_total_growth_pct": 27.0
+    },
+    {
+      "start_year": 1850,
+      "end_year": 1860,
+      "net_migration_share_total_growth_pct": 32.3
+    }
+  ],
+  "forbidden_inferences": [
+    "share of births",
+    "white-specific immigration",
+    "replacement of a settler lineage",
+    "temporary versus permanent migrants",
+    "local settlement composition"
+  ],
+  "limitations": [
+    "Shares are reported values; the underlying component counts are not reproduced here, so the shares cannot be recomputed from this record.",
+    "Historical boundary changes (annexation) alter the counted population."
+  ]
+}

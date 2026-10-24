@@ -1,0 +1,396 @@
+{
+  "name": "@red-cup-engineering/research-claim-reproduction-service",
+  "version": "0.1.0",
+  "description": "Check every number in your paper: a generic, deterministic engine that recomputes every quantitative claim a research paper states from its source records in exact decimal arithmetic, reports where the stated and derived values disagree, and projects the derived tables (CSV and Pandoc pipe tables) the paper prints. Claims and tables are data, a JSON claim-spec, so the paper repository holds no code.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/red-cup-engineering/research-claim-reproduction-service.git"
+  },
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "exports": {
+    ".": "./scripts/index.mjs",
+    "./reproduce-stated-claims": "./scripts/reproduce-stated-claims.mjs",
+    "./project-derived-tables": "./scripts/project-derived-tables.mjs",
+    "./reproduce-paper-claims": "./scripts/reproduce-paper-claims.mjs",
+    "./claim-spec.schema.json": "./schemas/claim-spec.schema.json"
+  },
+  "bin": {
+    "reproduce-stated-claims": "scripts/reproduce-stated-claims.mjs",
+    "project-derived-tables": "scripts/project-derived-tables.mjs",
+    "reproduce-paper-claims": "scripts/reproduce-paper-claims.mjs"
+  },
+  "files": [
+    "scripts",
+    "schemas",
+    "data",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "dependencies": {
+    "@red-cup-engineering/javascript-node-services-section": "0.4.1"
+  },
+  "devDependencies": {
+    "@red-cup-engineering/json-schema-services-section": "0.5.1"
+  },
+  "scripts": {
+    "check": "for file in scripts/*.mjs test/*.mjs; do node --check \"$file\" || exit; done",
+    "test": "node --test test/*.test.mjs",
+    "pack:dry-run": "npm pack --dry-run --ignore-scripts"
+  },
+  "keywords": [
+    "reproducibility",
+    "research",
+    "claims",
+    "verification",
+    "pandoc",
+    "decimal"
+  ],
+  "engines": {
+    "node": ">=24.2.0"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  },
+  "x-market": {
+    "offers": [
+      {
+        "operation": "reproduce-stated-claims",
+        "subpath": "./reproduce-stated-claims",
+        "export": "reproduceStatedClaims",
+        "route": "/v1/reproduce-stated-claims",
+        "method": "POST",
+        "price": {
+          "amount": "$0.01"
+        },
+        "framings": [
+          {
+            "key": "default",
+            "title": "Reproduce stated claims",
+            "description": "Check every number in your paper: recompute each quantitative claim from the source records in exact decimal arithmetic (sums, grouped series, rounded percentages, sensitivity variants) and get back, per claim, the stated value, the derived value and whether they agree.",
+            "tags": [
+              "research",
+              "reproducibility",
+              "verification",
+              "claims",
+              "open-science"
+            ],
+            "serviceName": "reproduce-stated-claims"
+          }
+        ],
+        "ledgerAccount": "Income:Sales:X402:Research-claim-reproduction",
+        "markets": [
+          "x402-bazaar",
+          "402index",
+          "house-capability-market",
+          "house-seller-catalog"
+        ],
+        "saleStatus": "held",
+        "seller": {
+          "enterprise": "engineering"
+        },
+        "category": "data",
+        "runtime": "edge",
+        "examples": {
+          "input": {
+            "records": {
+              "survey": {
+                "respondents": 50,
+                "byGroup": [
+                  12,
+                  30,
+                  8
+                ]
+              }
+            },
+            "spec": {
+              "specVersion": "1",
+              "records": {
+                "survey": "data/survey.json"
+              },
+              "bindings": {
+                "groups": {
+                  "record": "survey",
+                  "path": "/byGroup"
+                }
+              },
+              "claims": [
+                {
+                  "id": "respondents",
+                  "manuscript": "02-methods",
+                  "stated": 50,
+                  "expression": {
+                    "sum": {
+                      "ref": "groups"
+                    }
+                  },
+                  "basis": "sum of the three groups"
+                },
+                {
+                  "id": "share-group-a",
+                  "manuscript": "03-results",
+                  "stated": "24.00",
+                  "expression": {
+                    "percent": {
+                      "numerator": {
+                        "get": {
+                          "from": {
+                            "ref": "groups"
+                          },
+                          "key": 0
+                        }
+                      },
+                      "denominator": {
+                        "pointer": {
+                          "record": "survey",
+                          "path": "/respondents"
+                        }
+                      },
+                      "places": 2
+                    }
+                  },
+                  "basis": "group a / respondents"
+                },
+                {
+                  "id": "share-group-b",
+                  "manuscript": "03-results",
+                  "stated": "60.1",
+                  "expression": {
+                    "percent": {
+                      "numerator": {
+                        "get": {
+                          "from": {
+                            "ref": "groups"
+                          },
+                          "key": 1
+                        }
+                      },
+                      "denominator": {
+                        "pointer": {
+                          "record": "survey",
+                          "path": "/respondents"
+                        }
+                      },
+                      "places": 2
+                    }
+                  },
+                  "basis": "group b / respondents"
+                }
+              ]
+            }
+          },
+          "output": {
+            "results": [
+              {
+                "id": "respondents",
+                "manuscript": "02-methods",
+                "stated": 50,
+                "derived": 50,
+                "agrees": true,
+                "basis": "sum of the three groups"
+              },
+              {
+                "id": "share-group-a",
+                "manuscript": "03-results",
+                "stated": "24.00",
+                "derived": "24.00",
+                "agrees": true,
+                "basis": "group a / respondents"
+              },
+              {
+                "id": "share-group-b",
+                "manuscript": "03-results",
+                "stated": "60.1",
+                "derived": "60.00",
+                "agrees": false,
+                "basis": "group b / respondents"
+              }
+            ],
+            "total": 3,
+            "agreed": 2,
+            "disagreed": [
+              "share-group-b"
+            ],
+            "ok": false
+          }
+        }
+      },
+      {
+        "operation": "project-derived-tables",
+        "subpath": "./project-derived-tables",
+        "export": "projectDerivedTables",
+        "route": "/v1/project-derived-tables",
+        "method": "POST",
+        "price": {
+          "amount": "$0.01"
+        },
+        "framings": [
+          {
+            "key": "default",
+            "title": "Project derived tables",
+            "description": "Project the tables a paper prints straight from its source records: deterministic RFC 4180 CSV and Pandoc pipe-table Markdown with captions and labels, each file with its SHA-256, plus the claim-by-claim reproduction table, so the printed numbers are the computed ones.",
+            "tags": [
+              "research",
+              "reproducibility",
+              "tables",
+              "pandoc",
+              "csv"
+            ],
+            "serviceName": "project-derived-tables"
+          }
+        ],
+        "ledgerAccount": "Income:Sales:X402:Research-claim-reproduction",
+        "markets": [
+          "x402-bazaar",
+          "402index",
+          "house-capability-market",
+          "house-seller-catalog"
+        ],
+        "saleStatus": "held",
+        "seller": {
+          "enterprise": "engineering"
+        },
+        "category": "data",
+        "runtime": "node",
+        "examples": {
+          "input": {
+            "records": {
+              "survey": {
+                "respondents": 50,
+                "byGroup": [
+                  12,
+                  30,
+                  8
+                ]
+              }
+            },
+            "spec": {
+              "specVersion": "1",
+              "records": {
+                "survey": "data/survey.json"
+              },
+              "bindings": {
+                "groups": {
+                  "record": "survey",
+                  "path": "/byGroup"
+                }
+              },
+              "tables": [
+                {
+                  "id": "groups",
+                  "iterate": {
+                    "over": {
+                      "ref": "groups"
+                    },
+                    "as": "n",
+                    "index": "i"
+                  },
+                  "csv": {
+                    "path": "tables/groups.csv",
+                    "columns": [
+                      {
+                        "header": "group",
+                        "value": {
+                          "ref": "i"
+                        }
+                      },
+                      {
+                        "header": "n",
+                        "value": {
+                          "ref": "n"
+                        }
+                      },
+                      {
+                        "header": "share_pct",
+                        "value": {
+                          "percent": {
+                            "numerator": {
+                              "ref": "n"
+                            },
+                            "denominator": {
+                              "pointer": {
+                                "record": "survey",
+                                "path": "/respondents"
+                              }
+                            },
+                            "places": 1
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "markdown": {
+                    "caption": "Respondents by group.",
+                    "columns": [
+                      {
+                        "header": "Group",
+                        "align": "left",
+                        "value": {
+                          "ref": "i"
+                        }
+                      },
+                      {
+                        "header": "Respondents",
+                        "align": "right",
+                        "value": {
+                          "format": {
+                            "value": {
+                              "ref": "n"
+                            },
+                            "group": true
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "documents": [
+                {
+                  "path": "tables.md",
+                  "blocks": [
+                    {
+                      "heading": {
+                        "level": 1,
+                        "text": "Tables",
+                        "id": "tables"
+                      }
+                    },
+                    {
+                      "table": "groups"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "output": {
+            "files": [
+              {
+                "path": "tables/groups.csv",
+                "text": "group,n,share_pct\n0,12,24.0\n1,30,60.0\n2,8,16.0\n",
+                "sha256": "b552501319dbc5b1566850456e034371579fc926ee5d99eed511cd967d9847da",
+                "bytes": 47
+              },
+              {
+                "path": "tables.md",
+                "text": "# Tables {#tables}\n\nTable: Respondents by group. {#tbl:groups}\n\n| Group | Respondents |\n|---|--:|\n| 0 | 12 |\n| 1 | 30 |\n| 2 | 8 |\n",
+                "sha256": "98c6488b67f3f477df8539aed390eb85fe46549a9a5e9f66b0fd660a03c44149",
+                "bytes": 130
+              }
+            ],
+            "claims": {
+              "total": 0,
+              "agreed": 0,
+              "disagreed": [],
+              "ok": true
+            }
+          }
+        }
+      }
+    ]
+  }
+}

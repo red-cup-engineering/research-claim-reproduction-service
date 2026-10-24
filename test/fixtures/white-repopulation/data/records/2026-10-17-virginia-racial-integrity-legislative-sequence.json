@@ -1,0 +1,87 @@
+{
+  "kind": "lenticule.science.sociology.racial-eligibility-legislative-events.v1",
+  "source_status": "mixed-original-enacted-law-and-source-qualified-synthesis",
+  "compilation_date": "2026-10-17",
+  "jurisdiction": "Virginia, United States",
+  "events": [
+    {
+      "id": "VA-1924-ENACTED",
+      "date": "1924-03-20",
+      "state": "enacted",
+      "legal_object": "preservation-of-racial-integrity",
+      "criterion": "supposed no nonwhite ancestry, with up to one-sixteenth Indigenous ancestry exception and otherwise restrictive status and marriage rules",
+      "source": "https://encyclopediavirginia.org/primary-documents/preservation-of-racial-integrity-1924/",
+      "inference": "Elite genealogical exception alongside purportedly absolute purity",
+      "limitations": [
+        "not Indigenous governance identity",
+        "administrative application differs across persons",
+        "no individual fertility data"
+      ]
+    },
+    {
+      "id": "VA-1926-INTRODUCED",
+      "date": "1926-01-14",
+      "state": "bill-introduced-not-enacted",
+      "legal_object": "proposed-removal-of-pocahontas-exception",
+      "criterion": "Norris proposal to eliminate 1924 exception",
+      "source": "https://encyclopediavirginia.org/entries/racial-integrity-laws-1924-1930/",
+      "inference": "An attempt to tighten racial-admissibility, not successful statute",
+      "limitations": [
+        "reported in historical synthesis",
+        "proposed policy is not observable legal enforcement"
+      ]
+    },
+    {
+      "id": "VA-1926-HOUSE",
+      "date": "1926-03-05",
+      "state": "house-approved-senate-postponed",
+      "legal_object": "proposed-revision-to-racial-integrity",
+      "criterion": "House amendment would allow up to one-eighth Indigenous ancestry, not one-sixteenth, with other conditions; House vote 52–18",
+      "source": "https://encyclopediavirginia.org/entries/racial-integrity-laws-1924-1930/",
+      "later_disposition": {
+        "date": "1926-03-12",
+        "result": "Senate voted 20–9 to postpone indefinitely; proposal NOT enacted"
+      },
+      "inference": "Membership-boundary widening could be entertained to preserve established white-status groups even while enforcing segregation",
+      "limitations": [
+        "no enacted new 1/8 rule from this bill",
+        "original legislative journals not collated",
+        "number of people actually spared classification not directly established"
+      ]
+    },
+    {
+      "id": "VA-1930-ENACTED",
+      "date": "1930-03-04",
+      "state": "enacted",
+      "legal_object": "colored-persons-and-indians-defined-code-section-67",
+      "criterion": "Any ascertainable African ancestry classified colored; limited reservation-based exception for members of state-allotted Indian tribes, at least 1/4 Indian ancestry and less than 1/16 African ancestry while domiciled on reservation",
+      "source": "https://encyclopediavirginia.org/primary-documents/colored-persons-and-indians-defined-1930/",
+      "policy_implication": "Domicile-based rule denied comparable recognition to Indigenous people of same nations living away from reservations.",
+      "indigenous_response": {
+        "actor": "George Major Cook, Pamunkey chief",
+        "date": "1930-02-01",
+        "source": "https://encyclopediavirginia.org/entries/cook-george-major-1860-1930/",
+        "statement_level": "biographer quoting a contemporary speech, underlying hearing not independently read",
+        "point": "Cook opposed reservation-only exception as excluding tribal citizens off reservations"
+      },
+      "limitations": [
+        "blood fraction neither genetic science nor Indigenous citizenship",
+        "policy implementation effects require actual birth/marriage/identification records"
+      ]
+    }
+  ],
+  "conclusions": [
+    "No monotonic legal tightening can be inferred from these four event states",
+    "1926 1/8 House amendment did not become law",
+    "1930 did become law and explicitly conditioned limited Indigenous recognition on state reservation domicile",
+    "Elite whites' exceptional distant ancestry and Indigenous collective recognition face different policy conditions",
+    "No direct birth or survival counts; no demonstrated white demographic extinction"
+  ],
+  "research_question": "When the imagined ideal of legally pure whiteness conflicts with elite genealogies and Indigenous nationhood, whose continuing recognition does the state preserve?",
+  "references": [
+    "https://encyclopediavirginia.org/entries/racial-integrity-laws-1924-1930/",
+    "https://encyclopediavirginia.org/primary-documents/colored-persons-and-indians-defined-1930/",
+    "https://encyclopediavirginia.org/entries/cook-george-major-1860-1930/"
+  ],
+  "consumer": "@red-cup-engineering/knowledge-system-server/record-reading; requires authorized source mount"
+}

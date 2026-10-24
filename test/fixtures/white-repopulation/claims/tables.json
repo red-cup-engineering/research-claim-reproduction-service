@@ -1,0 +1,551 @@
+{
+  "$schema": "https://561.group/schema/research-claim-reproduction/claim-spec.schema.json",
+  "specVersion": "1",
+  "description": "The derived tables and Appendix A of White Repopulation.",
+  "bindings": {
+    "decadeStarts": {
+      "range": {
+        "start": 1790,
+        "step": 10,
+        "count": {
+          "count": {
+            "array": {
+              "ref": "captiveByDecade"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tables": [
+    {
+      "id": "decades",
+      "iterate": {
+        "over": {
+          "ref": "decadeStarts"
+        },
+        "as": "start",
+        "index": "i"
+      },
+      "let": {
+        "captive": {
+          "get": {
+            "from": {
+              "ref": "captiveByDecade"
+            },
+            "key": {
+              "ref": "i"
+            }
+          }
+        },
+        "total": {
+          "get": {
+            "from": {
+              "ref": "allByDecade"
+            },
+            "key": {
+              "ref": "i"
+            }
+          }
+        },
+        "end": {
+          "add": [
+            {
+              "ref": "start"
+            },
+            9
+          ]
+        }
+      },
+      "csv": {
+        "path": "data/derived/births-1790-1859.csv",
+        "crlfDigest": true,
+        "columns": [
+          {
+            "header": "start_year",
+            "value": {
+              "ref": "start"
+            }
+          },
+          {
+            "header": "end_year",
+            "value": {
+              "ref": "end"
+            }
+          },
+          {
+            "header": "modeled_births_into_slavery",
+            "value": {
+              "ref": "captive"
+            }
+          },
+          {
+            "header": "estimated_all_us_births",
+            "value": {
+              "ref": "total"
+            }
+          },
+          {
+            "header": "denominator_type",
+            "value": {
+              "if": {
+                "cond": {
+                  "equals": [
+                    {
+                      "ref": "i"
+                    },
+                    0
+                  ]
+                },
+                "then": "assumed",
+                "else": "modeled"
+              }
+            }
+          },
+          {
+            "header": "share_pct",
+            "value": {
+              "normalize": {
+                "percent": {
+                  "numerator": {
+                    "ref": "captive"
+                  },
+                  "denominator": {
+                    "ref": "total"
+                  },
+                  "places": 4,
+                  "rounding": "half-even"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "markdown": {
+        "caption": "Births into slavery and estimated U.S. births by decade. The 1790s denominator is assumed.",
+        "columns": [
+          {
+            "header": "Decade",
+            "align": "left",
+            "value": {
+              "text": [
+                {
+                  "ref": "start"
+                },
+                "–",
+                {
+                  "substring": {
+                    "value": {
+                      "ref": "end"
+                    },
+                    "start": 2
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "header": "Births into slavery",
+            "align": "right",
+            "value": {
+              "format": {
+                "value": {
+                  "ref": "captive"
+                },
+                "group": true
+              }
+            }
+          },
+          {
+            "header": "Estimated U.S. births",
+            "align": "right",
+            "value": {
+              "format": {
+                "value": {
+                  "ref": "total"
+                },
+                "group": true
+              }
+            }
+          },
+          {
+            "header": "Denominator",
+            "align": "left",
+            "value": {
+              "if": {
+                "cond": {
+                  "equals": [
+                    {
+                      "ref": "i"
+                    },
+                    0
+                  ]
+                },
+                "then": "assumed",
+                "else": "modeled"
+              }
+            }
+          },
+          {
+            "header": "Share (%)",
+            "align": "right",
+            "value": {
+              "percent": {
+                "numerator": {
+                  "ref": "captive"
+                },
+                "denominator": {
+                  "ref": "total"
+                },
+                "places": 2,
+                "rounding": "half-even"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "migration",
+      "iterate": {
+        "over": {
+          "pointer": {
+            "record": "migration",
+            "path": "/intervals"
+          }
+        },
+        "as": "row"
+      },
+      "csv": {
+        "path": "data/derived/us-migration-growth-1790-1860.csv",
+        "crlfDigest": true,
+        "columns": [
+          {
+            "header": "start_year",
+            "value": {
+              "get": {
+                "from": {
+                  "ref": "row"
+                },
+                "key": "start_year"
+              }
+            }
+          },
+          {
+            "header": "end_year",
+            "value": {
+              "get": {
+                "from": {
+                  "ref": "row"
+                },
+                "key": "end_year"
+              }
+            }
+          },
+          {
+            "header": "net_migration_share_total_growth_pct",
+            "value": {
+              "format": {
+                "value": {
+                  "get": {
+                    "from": {
+                      "ref": "row"
+                    },
+                    "key": "net_migration_share_total_growth_pct"
+                  }
+                },
+                "places": 1
+              }
+            }
+          },
+          {
+            "header": "source",
+            "value": {
+              "pointer": {
+                "record": "migration",
+                "path": "/source_label"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sensitivity",
+      "iterate": {
+        "over": {
+          "pointer": {
+            "record": "births",
+            "path": "/sensitivities"
+          }
+        },
+        "as": "row"
+      },
+      "let": {
+        "rate": {
+          "get": {
+            "from": {
+              "ref": "row"
+            },
+            "key": "rate"
+          }
+        },
+        "assumed": {
+          "floorDivide": {
+            "numerator": {
+              "multiply": [
+                {
+                  "ref": "meanPopulation1790s"
+                },
+                {
+                  "ref": "rate"
+                },
+                10
+              ]
+            },
+            "denominator": 1000
+          }
+        }
+      },
+      "markdown": {
+        "caption": "Sensitivity of the period shares to the assumed 1790s crude birth rate.",
+        "columns": [
+          {
+            "header": "1790s births per 1,000",
+            "align": "right",
+            "value": {
+              "ref": "rate"
+            }
+          },
+          {
+            "header": "1790s births",
+            "align": "right",
+            "value": {
+              "format": {
+                "value": {
+                  "ref": "assumed"
+                },
+                "group": true
+              }
+            }
+          },
+          {
+            "header": "Share 1790–1849 (%)",
+            "align": "right",
+            "value": {
+              "percent": {
+                "numerator": {
+                  "sum": {
+                    "slice": {
+                      "array": {
+                        "ref": "captiveByDecade"
+                      },
+                      "start": 0,
+                      "end": 6
+                    }
+                  }
+                },
+                "denominator": {
+                  "sum": {
+                    "slice": {
+                      "array": {
+                        "substitute": {
+                          "array": {
+                            "ref": "allByDecade"
+                          },
+                          "index": 0,
+                          "value": {
+                            "ref": "assumed"
+                          }
+                        }
+                      },
+                      "start": 0,
+                      "end": 6
+                    }
+                  }
+                },
+                "places": 2,
+                "rounding": "half-even"
+              }
+            }
+          },
+          {
+            "header": "Share 1790–1859 (%)",
+            "align": "right",
+            "value": {
+              "percent": {
+                "numerator": {
+                  "sum": {
+                    "slice": {
+                      "array": {
+                        "ref": "captiveByDecade"
+                      },
+                      "start": 0,
+                      "end": 7
+                    }
+                  }
+                },
+                "denominator": {
+                  "sum": {
+                    "slice": {
+                      "array": {
+                        "substitute": {
+                          "array": {
+                            "ref": "allByDecade"
+                          },
+                          "index": 0,
+                          "value": {
+                            "ref": "assumed"
+                          }
+                        }
+                      },
+                      "start": 0,
+                      "end": 7
+                    }
+                  }
+                },
+                "places": 2,
+                "rounding": "half-even"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "claims",
+      "iterate": {
+        "over": {
+          "ref": "claimResults"
+        },
+        "as": "c"
+      },
+      "markdown": {
+        "caption": {
+          "text": [
+            "Every quantitative claim in the paper and its derivation (",
+            {
+              "count": {
+                "array": {
+                  "ref": "claimResults"
+                },
+                "where": {
+                  "agrees": {
+                    "equals": true
+                  }
+                }
+              }
+            },
+            " of ",
+            {
+              "count": {
+                "array": {
+                  "ref": "claimResults"
+                }
+              }
+            },
+            " reproduced)."
+          ]
+        },
+        "columns": [
+          {
+            "header": "Claim",
+            "align": "left",
+            "value": {
+              "text": [
+                "`",
+                {
+                  "get": {
+                    "from": {
+                      "ref": "c"
+                    },
+                    "key": "id"
+                  }
+                },
+                "`"
+              ]
+            }
+          },
+          {
+            "header": "Stated",
+            "align": "right",
+            "value": {
+              "format": {
+                "value": {
+                  "get": {
+                    "from": {
+                      "ref": "c"
+                    },
+                    "key": "stated"
+                  }
+                },
+                "booleans": [
+                  "True",
+                  "False"
+                ]
+              }
+            }
+          },
+          {
+            "header": "Derived",
+            "align": "right",
+            "value": {
+              "format": {
+                "value": {
+                  "get": {
+                    "from": {
+                      "ref": "c"
+                    },
+                    "key": "derived"
+                  }
+                },
+                "booleans": [
+                  "True",
+                  "False"
+                ]
+              }
+            }
+          },
+          {
+            "header": "Basis",
+            "align": "left",
+            "value": {
+              "get": {
+                "from": {
+                  "ref": "c"
+                },
+                "key": "basis"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "documents": [
+    {
+      "path": "manuscript/90-appendix-a-tables.md",
+      "blocks": [
+        {
+          "heading": {
+            "level": 1,
+            "text": "Appendix A. Reproduced tables",
+            "id": "appendix-a"
+          }
+        },
+        {
+          "paragraph": "Generated by `analysis/reproduce.py` from `data/records/`. Do not edit by hand."
+        },
+        {
+          "table": "decades"
+        },
+        {
+          "table": "sensitivity"
+        },
+        {
+          "table": "claims"
+        }
+      ]
+    }
+  ]
+}

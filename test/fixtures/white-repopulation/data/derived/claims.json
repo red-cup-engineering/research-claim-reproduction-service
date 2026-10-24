@@ -1,0 +1,210 @@
+[
+  {
+    "id": "captive-share-1800-1849-numerator",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 5167522,
+    "derived": 5167522,
+    "agrees": true,
+    "basis": "sum of Hacker 2020 Table 1 col. 7 decades"
+  },
+  {
+    "id": "captive-share-1800-1849-denominator",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 30038000,
+    "derived": 30038000,
+    "agrees": true,
+    "basis": "Haines-Sutch annual births; 1790s assumed"
+  },
+  {
+    "id": "captive-share-1800-1849-pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "17.20",
+    "derived": "17.20",
+    "agrees": true,
+    "basis": "numerator / denominator"
+  },
+  {
+    "id": "captive-share-1790-1849-numerator",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 5571170,
+    "derived": 5571170,
+    "agrees": true,
+    "basis": "sum of Hacker 2020 Table 1 col. 7 decades"
+  },
+  {
+    "id": "captive-share-1790-1849-denominator",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 32524000,
+    "derived": 32524000,
+    "agrees": true,
+    "basis": "Haines-Sutch annual births; 1790s assumed"
+  },
+  {
+    "id": "captive-share-1790-1849-pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "17.13",
+    "derived": "17.13",
+    "agrees": true,
+    "basis": "numerator / denominator"
+  },
+  {
+    "id": "captive-share-1790-1859-numerator",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 7437068,
+    "derived": 7437068,
+    "agrees": true,
+    "basis": "sum of Hacker 2020 Table 1 col. 7 decades"
+  },
+  {
+    "id": "captive-share-1790-1859-denominator",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 44218000,
+    "derived": 44218000,
+    "agrees": true,
+    "basis": "Haines-Sutch annual births; 1790s assumed"
+  },
+  {
+    "id": "captive-share-1790-1859-pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.82",
+    "derived": "16.82",
+    "agrees": true,
+    "basis": "numerator / denominator"
+  },
+  {
+    "id": "births-1790s-assumed",
+    "manuscript": "03-birth-into-captivity",
+    "stated": 2486000,
+    "derived": 2486000,
+    "agrees": true,
+    "basis": "55/1000 x 4,520,000 x 10 years"
+  },
+  {
+    "id": "sensitivity-cbr45-share_1790_1849_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "17.37",
+    "derived": "17.37",
+    "agrees": true,
+    "basis": "1790s births at 45/1000"
+  },
+  {
+    "id": "sensitivity-cbr45-share_1790_1859_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.99",
+    "derived": "16.99",
+    "agrees": true,
+    "basis": "1790s births at 45/1000"
+  },
+  {
+    "id": "sensitivity-cbr50-share_1790_1849_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "17.25",
+    "derived": "17.25",
+    "agrees": true,
+    "basis": "1790s births at 50/1000"
+  },
+  {
+    "id": "sensitivity-cbr50-share_1790_1859_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.91",
+    "derived": "16.91",
+    "agrees": true,
+    "basis": "1790s births at 50/1000"
+  },
+  {
+    "id": "sensitivity-cbr55-share_1790_1849_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "17.13",
+    "derived": "17.13",
+    "agrees": true,
+    "basis": "1790s births at 55/1000"
+  },
+  {
+    "id": "sensitivity-cbr55-share_1790_1859_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.82",
+    "derived": "16.82",
+    "agrees": true,
+    "basis": "1790s births at 55/1000"
+  },
+  {
+    "id": "sensitivity-cbr60-share_1790_1849_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "17.01",
+    "derived": "17.01",
+    "agrees": true,
+    "basis": "1790s births at 60/1000"
+  },
+  {
+    "id": "sensitivity-cbr60-share_1790_1859_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.73",
+    "derived": "16.73",
+    "agrees": true,
+    "basis": "1790s births at 60/1000"
+  },
+  {
+    "id": "sensitivity-cbr65-share_1790_1849_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.89",
+    "derived": "16.89",
+    "agrees": true,
+    "basis": "1790s births at 65/1000"
+  },
+  {
+    "id": "sensitivity-cbr65-share_1790_1859_pct",
+    "manuscript": "03-birth-into-captivity",
+    "stated": "16.65",
+    "derived": "16.65",
+    "agrees": true,
+    "basis": "1790s births at 65/1000"
+  },
+  {
+    "id": "migration-share-1790-1800",
+    "manuscript": "01-introduction; 05-transatlantic",
+    "stated": "11.9",
+    "derived": "11.9",
+    "agrees": true,
+    "basis": "Haines 2006 Table Aa15-Aa21 as reported"
+  },
+  {
+    "id": "migration-share-1850-1860",
+    "manuscript": "01-introduction; 05-transatlantic",
+    "stated": "32.3",
+    "derived": "32.3",
+    "agrees": true,
+    "basis": "Haines 2006 Table Aa15-Aa21 as reported"
+  },
+  {
+    "id": "case-register-records",
+    "manuscript": "04-whose-future-increase",
+    "stated": 7,
+    "derived": 7,
+    "agrees": true,
+    "basis": "documents in the purposive register"
+  },
+  {
+    "id": "case-register-observations",
+    "manuscript": "04-whose-future-increase",
+    "stated": 21,
+    "derived": 21,
+    "agrees": true,
+    "basis": "observations across documents"
+  },
+  {
+    "id": "virginia-events",
+    "manuscript": "02-the-future-white",
+    "stated": 4,
+    "derived": 4,
+    "agrees": true,
+    "basis": "legal-state events 1924-1930"
+  },
+  {
+    "id": "virginia-1926-not-enacted",
+    "manuscript": "02-the-future-white",
+    "stated": true,
+    "derived": true,
+    "agrees": true,
+    "basis": "1926 House amendment state"
+  }
+]

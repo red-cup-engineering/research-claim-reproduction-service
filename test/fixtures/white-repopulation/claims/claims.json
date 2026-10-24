@@ -1,0 +1,577 @@
+{
+  "$schema": "https://561.group/schema/research-claim-reproduction/claim-spec.schema.json",
+  "specVersion": "1",
+  "description": "Every quantitative claim of White Repopulation, derived from data/records/. Tables and Appendix A are declared in tables.json.",
+  "records": {
+    "births": "data/records/2026-10-17-captive-birth-shares-source-series.json",
+    "migration": "data/records/us-net-migration-share-of-growth-1790-1860.json",
+    "cases": "data/records/2026-10-17-antebellum-property-law-case-register.json",
+    "virginia": "data/records/2026-10-17-virginia-racial-integrity-legislative-sequence.json"
+  },
+  "bindings": {
+    "captiveByDecade": {
+      "record": "births",
+      "path": "/source/captive_births_1790_1859_by_decade"
+    },
+    "meanPopulation1790s": {
+      "record": "births",
+      "path": "/source/mean_population_1790s"
+    },
+    "assumedRate1790s": {
+      "record": "births",
+      "path": "/assumed_cbr_1790s_per_thousand"
+    },
+    "observedByDecade": {
+      "record": "births",
+      "path": "/source/births_all_1800_1859_thousands",
+      "groupBy": {
+        "key": "/year",
+        "value": "/births_thousands",
+        "width": 10,
+        "scale": 1000,
+        "require": {
+          "from": 1800,
+          "to": 1859
+        }
+      }
+    },
+    "births1790sAssumed": {
+      "floorDivide": {
+        "numerator": {
+          "multiply": [
+            {
+              "ref": "meanPopulation1790s"
+            },
+            {
+              "ref": "assumedRate1790s"
+            },
+            10
+          ]
+        },
+        "denominator": 1000
+      }
+    },
+    "allByDecade": {
+      "concat": [
+        [
+          {
+            "ref": "births1790sAssumed"
+          }
+        ],
+        {
+          "ref": "observedByDecade"
+        }
+      ]
+    },
+    "captive_w1800to1849": {
+      "record": "births",
+      "path": "/source/captive_births_1790_1859_by_decade",
+      "slice": [
+        1,
+        6
+      ]
+    },
+    "numerator_w1800to1849": {
+      "sum": {
+        "ref": "captive_w1800to1849"
+      }
+    },
+    "denominator_w1800to1849": {
+      "sum": {
+        "slice": {
+          "array": {
+            "ref": "allByDecade"
+          },
+          "start": 1,
+          "end": 6
+        }
+      }
+    },
+    "captive_w1790to1849": {
+      "record": "births",
+      "path": "/source/captive_births_1790_1859_by_decade",
+      "slice": [
+        0,
+        6
+      ]
+    },
+    "numerator_w1790to1849": {
+      "sum": {
+        "ref": "captive_w1790to1849"
+      }
+    },
+    "denominator_w1790to1849": {
+      "sum": {
+        "slice": {
+          "array": {
+            "ref": "allByDecade"
+          },
+          "start": 0,
+          "end": 6
+        }
+      }
+    },
+    "captive_w1790to1859": {
+      "record": "births",
+      "path": "/source/captive_births_1790_1859_by_decade",
+      "slice": [
+        0,
+        7
+      ]
+    },
+    "numerator_w1790to1859": {
+      "sum": {
+        "ref": "captive_w1790to1859"
+      }
+    },
+    "denominator_w1790to1859": {
+      "sum": {
+        "slice": {
+          "array": {
+            "ref": "allByDecade"
+          },
+          "start": 0,
+          "end": 7
+        }
+      }
+    }
+  },
+  "claims": [
+    {
+      "id": "captive-share-1800-1849-numerator",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 5167522,
+      "expression": {
+        "ref": "numerator_w1800to1849"
+      },
+      "basis": "sum of Hacker 2020 Table 1 col. 7 decades"
+    },
+    {
+      "id": "captive-share-1800-1849-denominator",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 30038000,
+      "expression": {
+        "ref": "denominator_w1800to1849"
+      },
+      "basis": "Haines-Sutch annual births; 1790s assumed"
+    },
+    {
+      "id": "captive-share-1800-1849-pct",
+      "manuscript": "03-birth-into-captivity",
+      "stated": "17.20",
+      "expression": {
+        "percent": {
+          "numerator": {
+            "ref": "numerator_w1800to1849"
+          },
+          "denominator": {
+            "ref": "denominator_w1800to1849"
+          },
+          "places": 2,
+          "rounding": "half-even"
+        }
+      },
+      "basis": "numerator / denominator"
+    },
+    {
+      "id": "captive-share-1790-1849-numerator",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 5571170,
+      "expression": {
+        "ref": "numerator_w1790to1849"
+      },
+      "basis": "sum of Hacker 2020 Table 1 col. 7 decades"
+    },
+    {
+      "id": "captive-share-1790-1849-denominator",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 32524000,
+      "expression": {
+        "ref": "denominator_w1790to1849"
+      },
+      "basis": "Haines-Sutch annual births; 1790s assumed"
+    },
+    {
+      "id": "captive-share-1790-1849-pct",
+      "manuscript": "03-birth-into-captivity",
+      "stated": "17.13",
+      "expression": {
+        "percent": {
+          "numerator": {
+            "ref": "numerator_w1790to1849"
+          },
+          "denominator": {
+            "ref": "denominator_w1790to1849"
+          },
+          "places": 2,
+          "rounding": "half-even"
+        }
+      },
+      "basis": "numerator / denominator"
+    },
+    {
+      "id": "captive-share-1790-1859-numerator",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 7437068,
+      "expression": {
+        "ref": "numerator_w1790to1859"
+      },
+      "basis": "sum of Hacker 2020 Table 1 col. 7 decades"
+    },
+    {
+      "id": "captive-share-1790-1859-denominator",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 44218000,
+      "expression": {
+        "ref": "denominator_w1790to1859"
+      },
+      "basis": "Haines-Sutch annual births; 1790s assumed"
+    },
+    {
+      "id": "captive-share-1790-1859-pct",
+      "manuscript": "03-birth-into-captivity",
+      "stated": "16.82",
+      "expression": {
+        "percent": {
+          "numerator": {
+            "ref": "numerator_w1790to1859"
+          },
+          "denominator": {
+            "ref": "denominator_w1790to1859"
+          },
+          "places": 2,
+          "rounding": "half-even"
+        }
+      },
+      "basis": "numerator / denominator"
+    },
+    {
+      "id": "births-1790s-assumed",
+      "manuscript": "03-birth-into-captivity",
+      "stated": 2486000,
+      "expression": {
+        "ref": "births1790sAssumed"
+      },
+      "basis": {
+        "text": [
+          {
+            "ref": "assumedRate1790s"
+          },
+          "/1000 x ",
+          {
+            "format": {
+              "value": {
+                "ref": "meanPopulation1790s"
+              },
+              "group": true
+            }
+          },
+          " x 10 years"
+        ]
+      }
+    },
+    {
+      "id": {
+        "text": [
+          "sensitivity-cbr",
+          {
+            "ref": "rate"
+          },
+          "-",
+          {
+            "get": {
+              "from": {
+                "ref": "variant"
+              },
+              "key": "key"
+            }
+          }
+        ]
+      },
+      "manuscript": "03-birth-into-captivity",
+      "forEach": [
+        {
+          "over": {
+            "pointer": {
+              "record": "births",
+              "path": "/sensitivities"
+            }
+          },
+          "as": "row"
+        },
+        {
+          "over": {
+            "literal": [
+              {
+                "key": "share_1790_1849_pct",
+                "end": 6
+              },
+              {
+                "key": "share_1790_1859_pct",
+                "end": 7
+              }
+            ]
+          },
+          "as": "variant"
+        }
+      ],
+      "let": {
+        "rate": {
+          "get": {
+            "from": {
+              "ref": "row"
+            },
+            "key": "rate"
+          }
+        },
+        "assumed": {
+          "floorDivide": {
+            "numerator": {
+              "multiply": [
+                {
+                  "ref": "meanPopulation1790s"
+                },
+                {
+                  "ref": "rate"
+                },
+                10
+              ]
+            },
+            "denominator": 1000
+          }
+        },
+        "end": {
+          "get": {
+            "from": {
+              "ref": "variant"
+            },
+            "key": "end"
+          }
+        }
+      },
+      "stated": {
+        "format": {
+          "value": {
+            "get": {
+              "from": {
+                "ref": "row"
+              },
+              "key": {
+                "get": {
+                  "from": {
+                    "ref": "variant"
+                  },
+                  "key": "key"
+                }
+              }
+            }
+          },
+          "places": 2
+        }
+      },
+      "expression": {
+        "percent": {
+          "numerator": {
+            "sum": {
+              "slice": {
+                "array": {
+                  "ref": "captiveByDecade"
+                },
+                "start": 0,
+                "end": {
+                  "ref": "end"
+                }
+              }
+            }
+          },
+          "denominator": {
+            "sum": {
+              "slice": {
+                "array": {
+                  "substitute": {
+                    "array": {
+                      "ref": "allByDecade"
+                    },
+                    "index": 0,
+                    "value": {
+                      "ref": "assumed"
+                    }
+                  }
+                },
+                "start": 0,
+                "end": {
+                  "ref": "end"
+                }
+              }
+            }
+          },
+          "places": 2,
+          "rounding": "half-even"
+        }
+      },
+      "basis": {
+        "text": [
+          "1790s births at ",
+          {
+            "ref": "rate"
+          },
+          "/1000"
+        ]
+      }
+    },
+    {
+      "id": "migration-share-1790-1800",
+      "manuscript": "01-introduction; 05-transatlantic",
+      "stated": "11.9",
+      "expression": {
+        "format": {
+          "places": 1,
+          "value": {
+            "get": {
+              "from": {
+                "find": {
+                  "array": {
+                    "pointer": {
+                      "record": "migration",
+                      "path": "/intervals"
+                    }
+                  },
+                  "where": {
+                    "start_year": {
+                      "equals": 1790
+                    }
+                  }
+                }
+              },
+              "key": "net_migration_share_total_growth_pct"
+            }
+          }
+        }
+      },
+      "basis": "Haines 2006 Table Aa15-Aa21 as reported"
+    },
+    {
+      "id": "migration-share-1850-1860",
+      "manuscript": "01-introduction; 05-transatlantic",
+      "stated": "32.3",
+      "expression": {
+        "format": {
+          "places": 1,
+          "value": {
+            "get": {
+              "from": {
+                "find": {
+                  "array": {
+                    "pointer": {
+                      "record": "migration",
+                      "path": "/intervals"
+                    }
+                  },
+                  "where": {
+                    "start_year": {
+                      "equals": 1850
+                    }
+                  }
+                }
+              },
+              "key": "net_migration_share_total_growth_pct"
+            }
+          }
+        }
+      },
+      "basis": "Haines 2006 Table Aa15-Aa21 as reported"
+    },
+    {
+      "id": "case-register-records",
+      "manuscript": "04-whose-future-increase",
+      "stated": 7,
+      "expression": {
+        "count": {
+          "array": {
+            "pointer": {
+              "record": "cases",
+              "path": "/records"
+            }
+          }
+        }
+      },
+      "basis": "documents in the purposive register"
+    },
+    {
+      "id": "case-register-observations",
+      "manuscript": "04-whose-future-increase",
+      "stated": 21,
+      "expression": {
+        "sum": {
+          "map": {
+            "over": {
+              "pointer": {
+                "record": "cases",
+                "path": "/records"
+              }
+            },
+            "as": "document",
+            "to": {
+              "count": {
+                "array": {
+                  "get": {
+                    "from": {
+                      "ref": "document"
+                    },
+                    "key": "observations",
+                    "default": {
+                      "literal": []
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "basis": "observations across documents"
+    },
+    {
+      "id": "virginia-events",
+      "manuscript": "02-the-future-white",
+      "stated": 4,
+      "expression": {
+        "count": {
+          "array": {
+            "pointer": {
+              "record": "virginia",
+              "path": "/events"
+            }
+          }
+        }
+      },
+      "basis": "legal-state events 1924-1930"
+    },
+    {
+      "id": "virginia-1926-not-enacted",
+      "manuscript": "02-the-future-white",
+      "stated": true,
+      "expression": {
+        "any": {
+          "array": {
+            "pointer": {
+              "record": "virginia",
+              "path": "/events"
+            }
+          },
+          "where": {
+            "id": {
+              "startsWith": "VA-1926"
+            },
+            "state": {
+              "notEquals": "enacted"
+            }
+          }
+        }
+      },
+      "basis": "1926 House amendment state"
+    }
+  ],
+  "resultsPath": "data/derived/claims.json",
+  "tables": "tables.json"
+}

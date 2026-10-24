@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/schema/x402/package-market.schema.json",
+  "title": "package.json#x-market",
+  "description": "The one thing a FOSS package declares to be sold as a hosted x402 service: per exported operation, the commercial terms that cannot be read from the code (route, price, framings, ledger account, markets, sale status, seller enterprise). Everything else in the offer declaration is derived from the package itself: gatewayPackageName and licence from package.json, the input and output schemas from the operation module's exported operation definition, the program contract from a MetroPlat operation declaration when the module exports one, and the section from the seller's enterprise record. The offer is built by deriveOffersFromPackage and admitted by declareOffer; nothing here is authored a second time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["offers"],
+  "properties": {
+    "gateway": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64,
+      "description": "Optional override of the derived gateway label. Defaults to the unscoped package name without its -engineering-services-section, -services-section or -service suffix."
+    },
+    "offers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation", "subpath", "export", "route", "method", "price", "framings", "ledgerAccount", "markets", "saleStatus", "seller"],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "maxLength": 64,
+            "description": "The one operation this offer sells. When the module exports a catalog, this is the key of its operations map; otherwise it names the module's single operation."
+          },
+          "subpath": {
+            "type": "string",
+            "pattern": "^\\.(/[^\\s]+)?$",
+            "description": "The package.json exports subpath of the operation module; '.' is the package root."
+          },
+          "export": {
+            "type": "string",
+            "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$",
+            "description": "The named function export the market calls with the request (the operation definition's own operation function)."
+          },
+          "route": {
+            "type": "string",
+            "pattern": "^/[A-Za-z0-9\\-._~/{}]*$",
+            "maxLength": 256
+          },
+          "method": { "enum": ["GET", "POST"] },
+          "price": {
+            "description": "A dollar quote, or an exact atomic amount in one CAIP-19 EVM ERC-20 asset. basis 'fixed' (default) charges amount per call; 'canonical-json-byte-bands' makes amount the minimum and requires bands.",
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["amount"],
+                "properties": {
+                  "amount": { "type": "string", "pattern": "^\\$[0-9]+\\.[0-9]{2,6}$" },
+                  "basis": { "enum": ["fixed", "canonical-json-byte-bands"] },
+                  "bands": { "$ref": "#/$defs/bands" }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["amount", "asset"],
+                "properties": {
+                  "amount": { "type": "string", "pattern": "^[1-9][0-9]{0,77}$" },
+                  "asset": { "type": "string", "pattern": "^eip155:[1-9][0-9]*/erc20:0x[0-9a-f]{40}$" },
+                  "basis": { "enum": ["fixed", "canonical-json-byte-bands"] },
+                  "bands": { "$ref": "#/$defs/bands" }
+                }
+              }
+            ]
+          },
+          "framings": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["key", "title", "description", "tags", "serviceName"],
+              "description": "Market-facing ways of saying the same product; the offer schema is the authority on their shape."
+            }
+          },
+          "ledgerAccount": { "type": "string", "pattern": "^Income(?::[A-Z][A-Za-z0-9-]*)+$" },
+          "markets": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "enum": ["x402-bazaar", "402index", "house-capability-market", "house-seller-catalog"] }
+          },
+          "saleStatus": {
+            "enum": ["held", "enabled"],
+            "description": "Required, so that going on sale is always a reviewed act. 'held' is catalogued but issues no payment challenge."
+          },
+          "seller": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["enterprise"],
+            "properties": {
+              "enterprise": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+            },
+            "description": "The selling micro-enterprise. Its entity and repository constitution record (path and sha256) are read from the enterprise record, never authored here."
+          },
+          "serviceOffering": {
+            "type": "string",
+            "pattern": "^([a-z0-9][a-z0-9-]*#)?[a-z0-9][a-z0-9-]*$",
+            "description": "An office service-offering id, or office#id. Verified against the office record's service-offerings[] and emitted as the offer's rendanheyi link."
+          },
+          "category": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "resources": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 200 } },
+          "listed": { "type": "boolean" },
+          "runtime": { "enum": ["edge", "node"] },
+          "recoverable": { "type": "boolean" },
+          "requestMaxBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+          "examples": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["input", "output"],
+            "description": "One worked request and response. Otherwise read from a structured sample in the README's Command section. Both are validated against the operation's schemas.",
+            "properties": { "input": {}, "output": {} }
+          },
+          "metroplat": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Where a MetroPlat operation declaration lives when it is not exported by the operation module itself.",
+            "properties": {
+              "subpath": { "type": "string", "pattern": "^\\.(/[^\\s]+)?$" },
+              "export": { "type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "bands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["includedBytes", "additionalUnitBytes", "additionalUnitAtomic", "maximumAtomic"],
+      "properties": {
+        "includedBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+        "additionalUnitBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+        "additionalUnitAtomic": { "type": "string", "pattern": "^[1-9][0-9]{0,77}$" },
+        "maximumAtomic": { "type": "string", "pattern": "^[1-9][0-9]{0,77}$" }
+      }
+    }
+  }
+}

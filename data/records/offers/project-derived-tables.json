@@ -1,0 +1,282 @@
+{
+  "name": "Project derived tables",
+  "gateway": "research-claim-reproduction",
+  "gatewayPackageName": "@red-cup-engineering/research-claim-reproduction-service",
+  "section": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-data-engineering-services-section/services/computer-content-engineering-services-section/services/computer-documents-engineering-services-section/services/research-claim-reproduction-service",
+  "operation": "project-derived-tables",
+  "origin": "https://market.561.group",
+  "route": "/v1/project-derived-tables",
+  "method": "POST",
+  "price": "$0.01",
+  "category": "data",
+  "output": {
+    "schema": {
+      "type": "object",
+      "required": [
+        "files",
+        "claims"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "text",
+              "sha256",
+              "bytes"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "variants": {
+                "type": "object",
+                "description": "Legacy renderings of the same file: crlf holds the digest of the text with every LF replaced by CRLF."
+              }
+            }
+          }
+        },
+        "claims": {
+          "type": "object",
+          "required": [
+            "total",
+            "agreed",
+            "disagreed",
+            "ok"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "agreed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "disagreed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ok": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "example": {
+      "files": [
+        {
+          "path": "tables/groups.csv",
+          "text": "group,n,share_pct\n0,12,24.0\n1,30,60.0\n2,8,16.0\n",
+          "sha256": "b552501319dbc5b1566850456e034371579fc926ee5d99eed511cd967d9847da",
+          "bytes": 47
+        },
+        {
+          "path": "tables.md",
+          "text": "# Tables {#tables}\n\nTable: Respondents by group. {#tbl:groups}\n\n| Group | Respondents |\n|---|--:|\n| 0 | 12 |\n| 1 | 30 |\n| 2 | 8 |\n",
+          "sha256": "98c6488b67f3f477df8539aed390eb85fe46549a9a5e9f66b0fd660a03c44149",
+          "bytes": 130
+        }
+      ],
+      "claims": {
+        "total": 0,
+        "agreed": 0,
+        "disagreed": [],
+        "ok": true
+      }
+    }
+  },
+  "framings": [
+    {
+      "key": "default",
+      "title": "Project derived tables",
+      "description": "Project the tables a paper prints straight from its source records: deterministic RFC 4180 CSV and Pandoc pipe-table Markdown with captions and labels, each file with its SHA-256, plus the claim-by-claim reproduction table, so the printed numbers are the computed ones.",
+      "tags": [
+        "research",
+        "reproducibility",
+        "tables",
+        "pandoc",
+        "csv"
+      ],
+      "serviceName": "project-derived-tables"
+    }
+  ],
+  "ledgerAccount": "Income:Sales:X402:Research-claim-reproduction",
+  "markets": [
+    "x402-bazaar",
+    "402index",
+    "house-capability-market",
+    "house-seller-catalog"
+  ],
+  "seller": {
+    "enterprise": "engineering",
+    "entity": "561-group-llc",
+    "record": {
+      "path": "lib/emsenn/services/561-group/services/engineering-services-section/lib/agency/enterprises/engineering.json",
+      "sha256": "6af4ed9d1e4612b0383267e7ffe0ad028c52164ee3c5136110d434384a29c39f"
+    }
+  },
+  "compute": {
+    "package": "@red-cup-engineering/research-claim-reproduction-service",
+    "subpath": "./project-derived-tables",
+    "export": "projectDerivedTables",
+    "args": [
+      "body"
+    ]
+  },
+  "runtime": "node",
+  "saleStatus": "held",
+  "bodyExample": {
+    "records": {
+      "survey": {
+        "respondents": 50,
+        "byGroup": [
+          12,
+          30,
+          8
+        ]
+      }
+    },
+    "spec": {
+      "specVersion": "1",
+      "records": {
+        "survey": "data/survey.json"
+      },
+      "bindings": {
+        "groups": {
+          "record": "survey",
+          "path": "/byGroup"
+        }
+      },
+      "tables": [
+        {
+          "id": "groups",
+          "iterate": {
+            "over": {
+              "ref": "groups"
+            },
+            "as": "n",
+            "index": "i"
+          },
+          "csv": {
+            "path": "tables/groups.csv",
+            "columns": [
+              {
+                "header": "group",
+                "value": {
+                  "ref": "i"
+                }
+              },
+              {
+                "header": "n",
+                "value": {
+                  "ref": "n"
+                }
+              },
+              {
+                "header": "share_pct",
+                "value": {
+                  "percent": {
+                    "numerator": {
+                      "ref": "n"
+                    },
+                    "denominator": {
+                      "pointer": {
+                        "record": "survey",
+                        "path": "/respondents"
+                      }
+                    },
+                    "places": 1
+                  }
+                }
+              }
+            ]
+          },
+          "markdown": {
+            "caption": "Respondents by group.",
+            "columns": [
+              {
+                "header": "Group",
+                "align": "left",
+                "value": {
+                  "ref": "i"
+                }
+              },
+              {
+                "header": "Respondents",
+                "align": "right",
+                "value": {
+                  "format": {
+                    "value": {
+                      "ref": "n"
+                    },
+                    "group": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "documents": [
+        {
+          "path": "tables.md",
+          "blocks": [
+            {
+              "heading": {
+                "level": 1,
+                "text": "Tables",
+                "id": "tables"
+              }
+            },
+            {
+              "table": "groups"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "bodySchema": {
+    "type": "object",
+    "required": [
+      "spec"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "object",
+        "description": "Record name (as named in spec.records) to the record's parsed JSON value. Numbers arrive as doubles, so integers beyond 2^53 and decimals with more than 17 significant digits are not exact; use recordTexts for those."
+      },
+      "recordTexts": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Record name to the record's JSON text; every number literal is read exactly. A record is given in records or in recordTexts, not both."
+      },
+      "spec": {
+        "type": "object",
+        "description": "The claim-spec: records, bindings, claims and (for projection) tables and documents. See schemas/claim-spec.schema.json."
+      }
+    }
+  }
+}

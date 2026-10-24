@@ -1,0 +1,313 @@
+{
+  "kind": "lenticule.science.demography.birth-reconstruction.v1",
+  "status": "estimated",
+  "sources": {
+    "hacker": {
+      "title": "Hacker 2020 Table 1 column 7",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7716878/"
+    },
+    "haines_sutch": {
+      "title": "Haines Sutch historical annual births Table Aa9-14",
+      "url": "https://hsus.cambridge.org/HSUSWeb/toc/treeTablePathIdAa9-14.html"
+    },
+    "haines_1790s": {
+      "title": "Haines Table Aa15-21 mid-decade population 1790s",
+      "url": "https://hsus.cambridge.org/HSUSWeb/toc/treeTablePathIdAa15-21.html"
+    }
+  },
+  "source": {
+    "births_all_1800_1859_thousands": [
+      {
+        "year": 1800,
+        "births_thousands": 290
+      },
+      {
+        "year": 1801,
+        "births_thousands": 299
+      },
+      {
+        "year": 1802,
+        "births_thousands": 308
+      },
+      {
+        "year": 1803,
+        "births_thousands": 317
+      },
+      {
+        "year": 1804,
+        "births_thousands": 327
+      },
+      {
+        "year": 1805,
+        "births_thousands": 337
+      },
+      {
+        "year": 1806,
+        "births_thousands": 347
+      },
+      {
+        "year": 1807,
+        "births_thousands": 358
+      },
+      {
+        "year": 1808,
+        "births_thousands": 369
+      },
+      {
+        "year": 1809,
+        "births_thousands": 380
+      },
+      {
+        "year": 1810,
+        "births_thousands": 391
+      },
+      {
+        "year": 1811,
+        "births_thousands": 401
+      },
+      {
+        "year": 1812,
+        "births_thousands": 411
+      },
+      {
+        "year": 1813,
+        "births_thousands": 421
+      },
+      {
+        "year": 1814,
+        "births_thousands": 431
+      },
+      {
+        "year": 1815,
+        "births_thousands": 441
+      },
+      {
+        "year": 1816,
+        "births_thousands": 452
+      },
+      {
+        "year": 1817,
+        "births_thousands": 463
+      },
+      {
+        "year": 1818,
+        "births_thousands": 476
+      },
+      {
+        "year": 1819,
+        "births_thousands": 488
+      },
+      {
+        "year": 1820,
+        "births_thousands": 501
+      },
+      {
+        "year": 1821,
+        "births_thousands": 516
+      },
+      {
+        "year": 1822,
+        "births_thousands": 532
+      },
+      {
+        "year": 1823,
+        "births_thousands": 548
+      },
+      {
+        "year": 1824,
+        "births_thousands": 564
+      },
+      {
+        "year": 1825,
+        "births_thousands": 581
+      },
+      {
+        "year": 1826,
+        "births_thousands": 599
+      },
+      {
+        "year": 1827,
+        "births_thousands": 618
+      },
+      {
+        "year": 1828,
+        "births_thousands": 637
+      },
+      {
+        "year": 1829,
+        "births_thousands": 657
+      },
+      {
+        "year": 1830,
+        "births_thousands": 677
+      },
+      {
+        "year": 1831,
+        "births_thousands": 692
+      },
+      {
+        "year": 1832,
+        "births_thousands": 708
+      },
+      {
+        "year": 1833,
+        "births_thousands": 724
+      },
+      {
+        "year": 1834,
+        "births_thousands": 740
+      },
+      {
+        "year": 1835,
+        "births_thousands": 756
+      },
+      {
+        "year": 1836,
+        "births_thousands": 772
+      },
+      {
+        "year": 1837,
+        "births_thousands": 789
+      },
+      {
+        "year": 1838,
+        "births_thousands": 805
+      },
+      {
+        "year": 1839,
+        "births_thousands": 820
+      },
+      {
+        "year": 1840,
+        "births_thousands": 837
+      },
+      {
+        "year": 1841,
+        "births_thousands": 852
+      },
+      {
+        "year": 1842,
+        "births_thousands": 867
+      },
+      {
+        "year": 1843,
+        "births_thousands": 883
+      },
+      {
+        "year": 1844,
+        "births_thousands": 897
+      },
+      {
+        "year": 1845,
+        "births_thousands": 913
+      },
+      {
+        "year": 1846,
+        "births_thousands": 930
+      },
+      {
+        "year": 1847,
+        "births_thousands": 950
+      },
+      {
+        "year": 1848,
+        "births_thousands": 972
+      },
+      {
+        "year": 1849,
+        "births_thousands": 994
+      },
+      {
+        "year": 1850,
+        "births_thousands": 1017
+      },
+      {
+        "year": 1851,
+        "births_thousands": 1050
+      },
+      {
+        "year": 1852,
+        "births_thousands": 1086
+      },
+      {
+        "year": 1853,
+        "births_thousands": 1122
+      },
+      {
+        "year": 1854,
+        "births_thousands": 1160
+      },
+      {
+        "year": 1855,
+        "births_thousands": 1193
+      },
+      {
+        "year": 1856,
+        "births_thousands": 1223
+      },
+      {
+        "year": 1857,
+        "births_thousands": 1253
+      },
+      {
+        "year": 1858,
+        "births_thousands": 1282
+      },
+      {
+        "year": 1859,
+        "births_thousands": 1308
+      }
+    ],
+    "captive_births_1790_1859_by_decade": [
+      403648,
+      583395,
+      759768,
+      1003859,
+      1280680,
+      1539820,
+      1865898
+    ],
+    "mean_population_1790s": 4520000
+  },
+  "assumed_cbr_1790s_per_thousand": 55,
+  "calculated": {
+    "capt_births_1790_1849": 5571170,
+    "capt_births_1790_1859": 7437068,
+    "all_births_1800_1849": 30038000,
+    "all_births_1800_1859": 41732000,
+    "all_births_1790s_default": 2486000
+  },
+  "sensitivities": [
+    {
+      "rate": 45,
+      "share_1790_1849_pct": 17.37,
+      "share_1790_1859_pct": 16.99
+    },
+    {
+      "rate": 50,
+      "share_1790_1849_pct": 17.25,
+      "share_1790_1859_pct": 16.91
+    },
+    {
+      "rate": 55,
+      "share_1790_1849_pct": 17.13,
+      "share_1790_1859_pct": 16.82
+    },
+    {
+      "rate": 60,
+      "share_1790_1849_pct": 17.01,
+      "share_1790_1859_pct": 16.73
+    },
+    {
+      "rate": 65,
+      "share_1790_1849_pct": 16.89,
+      "share_1790_1859_pct": 16.65
+    }
+  ],
+  "limitations": [
+    "1790s total births assumed",
+    "changing historical population coverage",
+    "Hacker estimates uncertainty independent of sensitivity range",
+    "does not measure forced reproduction or individual births directly"
+  ]
+}

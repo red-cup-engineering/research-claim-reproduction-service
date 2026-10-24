@@ -1,0 +1,471 @@
+{
+  "kind": "lenticule.sociology.antebellum-reproductive-property-case-observations.v1",
+  "compiled_date": "2026-10-17",
+  "type": "primary-historical-case-extraction",
+  "status": "source-qualified-mixed-original-and-secondary",
+  "selection_rule": "Purposive selection of cases located via Gwendoline Alphonso (2023) plus primary published court decisions, historical archive, and opposing decisions; NOT a random sample of jurisdictions or cases.",
+  "universe_not_ascertained": true,
+  "copyright": "Observed facts and paraphrases of public historical records; modern preprint interpretations attributed, not reproduced wholesale.",
+  "records": [
+    {
+      "case_id": "COV1842",
+      "kind": "judicial-opinion",
+      "case": "Covington v. McEntire",
+      "jurisdiction": "North Carolina",
+      "decision_year": 1842,
+      "citation": "37 N.C. 316 (1842)",
+      "source": "https://www.casemine.com/judgement/us/59145de2add7b049341ffa35",
+      "read_status": "historical-judicial-transcription-read",
+      "persons": [
+        {
+          "name": "Binah",
+          "role": "enslaved mother; legal subject of claim"
+        },
+        {
+          "name": "Catharine",
+          "role": "child named in proposed distribution"
+        },
+        {
+          "name": "Rachel Covington",
+          "role": "remainder beneficiary, slaveholding claimant"
+        },
+        {
+          "name": "Prior McEntire",
+          "role": "executor contesting future issue"
+        }
+      ],
+      "facts": {
+        "original_will_testator": "William McEntire",
+        "testator_death_year": 1832,
+        "life_tenant": "his widow Rebecca McEntire",
+        "life_tenant_end_year": 1842,
+        "children_born_during_life_tenancy_reported_living": 4,
+        "offspring_any_mentioned": "four living",
+        "payment_proposed_usd": 55,
+        "payment_context": "proposed residuary distribution rejected in final decree"
+      },
+      "legal_rules": [
+        "under a life estate and remainder, issue follows the mother to remainder beneficiary unless express exception",
+        "different terms for another enslaved woman Nan do not create a Binah exception"
+      ],
+      "court_disposition": "Rachel Covington receives Binah and her four living children claimed under the remainder gift.",
+      "source_locator": "case pp 317–321; Gaston J. opinion; proposed division at p 317; holding at pp318–320",
+      "observations": [
+        {
+          "id": "COV-1",
+          "predicate": "reported-living-children-in-title-dispute",
+          "value": 4,
+          "location": "p317"
+        },
+        {
+          "id": "COV-2",
+          "predicate": "named-child",
+          "value": "Catharine",
+          "location": "p317"
+        },
+        {
+          "id": "COV-3",
+          "predicate": "remainder-beneficiary",
+          "value": "Rachel Covington",
+          "location": "pp318–320"
+        }
+      ],
+      "limits": [
+        "No testimony from Binah or the children",
+        "No count of total lifetime births",
+        "No evidence of directed conception",
+        "Proposed $55 is not an individual sale price"
+      ]
+    },
+    {
+      "case_id": "NEL1849",
+      "kind": "judicial-opinion",
+      "case": "Nelson v. Nelson",
+      "jurisdiction": "North Carolina",
+      "decision_year": 1849,
+      "citation": "41 N.C. 409 (1849)",
+      "source": "https://www.casemine.com/judgement/us/5914cf83add7b04934822097",
+      "read_status": "historical-judicial-transcription-read",
+      "persons": [
+        {
+          "name": "Leah",
+          "role": "enslaved mother; subject of will"
+        },
+        {
+          "name": "Anderson",
+          "role": "Leah's youngest already-born child named in 1843 will"
+        },
+        {
+          "name": "Elizabeth Nelson",
+          "role": "slaveholding beneficiary of Leah and Anderson"
+        }
+      ],
+      "facts": {
+        "testator": "James Nelson",
+        "will_date": "1843-09-12",
+        "death_date": "1844-01-06",
+        "children_born_after_death_reported": 3,
+        "known_already_born_child_named": "Anderson",
+        "period_family_maintenance_usd": 329.75,
+        "maintenance_scope": "Leah and her family; not isolated pregnancy cost"
+      },
+      "legal_rules": [
+        "the 1843 bequest of future increase to three daughters interpreted as births within testator's lifetime",
+        "children born after the testator's death passed with Leah to Elizabeth",
+        "the court balanced the future value of children against expenses of gestation and care"
+      ],
+      "court_disposition": "Elizabeth Nelson awarded Leah's three post-death children, not divided among her sisters.",
+      "source_locator": "pp409–418; three children at 412; maintenance at 416; construction pp417–418",
+      "observations": [
+        {
+          "id": "NEL-1",
+          "predicate": "reported-post-death-children",
+          "value": 3,
+          "location": "p412"
+        },
+        {
+          "id": "NEL-2",
+          "predicate": "named-child",
+          "value": "Anderson",
+          "location": "p410"
+        },
+        {
+          "id": "NEL-3",
+          "predicate": "reported-family-maintenance-expense",
+          "value": 329.75,
+          "unit": "USD contemporaneous",
+          "location": "p416"
+        },
+        {
+          "id": "NEL-4",
+          "predicate": "court-projected-profit-of-future-issue",
+          "value": true,
+          "location": "pp417–418"
+        }
+      ],
+      "limits": [
+        "Maintenance cost not exclusively attributed to prenatal or childbirth events",
+        "Three children is not an annual fertility rate",
+        "No statement from Leah or her children",
+        "Do not treat imagined profit as realized sale value"
+      ]
+    },
+    {
+      "case_id": "SMI1839",
+      "kind": "freedom-petition-court-opinion",
+      "case": "Smith v. Milman",
+      "jurisdiction": "Delaware",
+      "decision_year": 1839,
+      "citation": "2 Del. 497 (1839)",
+      "source": "https://openjurist.org/2/del/497/smith-v-milman-3381841",
+      "read_status": "historical-judicial-opinion-read",
+      "persons": [
+        {
+          "name": "Stephen",
+          "role": "freedom petitioner, child of Hessy"
+        },
+        {
+          "name": "Hessy",
+          "role": "enslaved mother"
+        },
+        {
+          "name": "Ann Smith",
+          "role": "life tenant who executed manumission deed"
+        },
+        {
+          "name": "Nancy Smith",
+          "role": "slaveholding claimant whose asserted title rejected"
+        }
+      ],
+      "facts": {
+        "date": "1839-07-05",
+        "will_year": 1791,
+        "birth_order_of_stephen": "disputed; alternative reasonings"
+      },
+      "legal_rules": [
+        "maternal status decides free/slave status of newborn, not identity of the owner",
+        "Delaware distinguished ownership of children under life tenancy from the North Carolina remainder rule",
+        "manumission deed of Ann Smith governed Stephen once court classified owner"
+      ],
+      "court_disposition": "Court ordered Stephen's freedom; Nancy's asserted title rejected under both factual alternatives.",
+      "source_locator": "2 Del. 497–499, paragraphs 2–6",
+      "observations": [
+        {
+          "id": "SMI-1",
+          "predicate": "right-to-freedom-recognized",
+          "value": true,
+          "location": "¶¶4–6"
+        },
+        {
+          "id": "SMI-2",
+          "predicate": "partus-limited-to-status-not-owner",
+          "value": true,
+          "location": "¶5"
+        },
+        {
+          "id": "SMI-3",
+          "predicate": "birth-order-disputed",
+          "value": true,
+          "location": "¶¶2–3"
+        }
+      ],
+      "limits": [
+        "Outcome is freedom of petitioner Stephen, not abolition of hereditary slavery",
+        "Hessy's agency/consent unrecorded",
+        "The case expressly notes different rules across states"
+      ]
+    },
+    {
+      "case_id": "JOH1848",
+      "kind": "judicial-opinion",
+      "case": "Johnson's Adm'r v. Johnson's Heirs",
+      "jurisdiction": "Kentucky",
+      "decision_year": 1848,
+      "citation": "47 Ky. 470 (1848)",
+      "source": "https://law.counselstack.com/opinion/johnsons-admr-v-johnsons-heirs-kyctapp-1848",
+      "read_status": "historical-judicial-transcription-read-with-typographic-noise",
+      "persons": [
+        {
+          "name": "Lytha",
+          "role": "enslaved mother with contingent freedom"
+        },
+        {
+          "name": "Margaret Johnson",
+          "role": "life tenant, enslaver"
+        }
+      ],
+      "facts": {
+        "testator": "Job Johnson",
+        "children_reported_born_during_life_tenancy": 7,
+        "mother_release": "Lytha entitled to freedom upon Margaret's death, having reached 21",
+        "child_legal_status_at_birth": "enslaved"
+      },
+      "legal_rules": [
+        "prospective conditional emancipation distinct from already-effective emancipation whose enjoyment is deferred",
+        "children followed enslaved status of mother when born",
+        "no remainder interest existed; widow's lifetime estate carried property claim to children"
+      ],
+      "court_disposition": "Mother Lytha free upon widow's death; her seven children remained legally enslaved and claimed by Margaret Johnson's estate, not by their mother.",
+      "source_locator": "47 Ky. 470–474, 470–471 family status, 472–474 ownership and reversal",
+      "observations": [
+        {
+          "id": "JOH-1",
+          "predicate": "children-reported",
+          "value": 7,
+          "location": "p470"
+        },
+        {
+          "id": "JOH-2",
+          "predicate": "mother-emancipated-child-not",
+          "value": true,
+          "location": "pp471–474"
+        },
+        {
+          "id": "JOH-3",
+          "predicate": "children-allocated-to-life-tenants-estate",
+          "value": true,
+          "location": "p473"
+        }
+      ],
+      "limits": [
+        "Do not imply children were granted freedom",
+        "Individual children unnamed in available opinion",
+        "No evidence of directed pairing or maternal consent"
+      ]
+    },
+    {
+      "case_id": "BAN1823",
+      "kind": "reported-judicial-opinion-secondary-extraction",
+      "case": "Banks' Adm'r v. Marksberry",
+      "jurisdiction": "Kentucky",
+      "decision_year": 1823,
+      "citation": "13 Ky. 275 (3 Litt. 275)",
+      "source": "https://www.courtlistener.com/c/ky/13/",
+      "secondary_sources": [
+        "https://doi.org/10.33774/apsa-2023-2nnzm",
+        "https://openjurist.org/2/del/497/smith-v-milman-3381841"
+      ],
+      "read_status": "original-court-opinion-NOT-retrieved-secondary-extraction-only",
+      "persons": [
+        {
+          "name": "Pen",
+          "role": "enslaved mother, prospective issue contested in deed"
+        }
+      ],
+      "facts": {
+        "reported_deed_issue": "future children of Pen as assignable property"
+      },
+      "legal_rules": [
+        "reported recognition of owner-directed conveyance of unconceived future increase",
+        "original text must be obtained before exact wording or broad rule claimed"
+      ],
+      "court_disposition": "Reported affirmation of future issue as transferable under deed; not independently verified from original opinion.",
+      "source_locator": "Alphonso preprint pp31–32 notes93–94; Delaware Smith v Milman ¶2; CourtListener index 13 Ky 275",
+      "observations": [
+        {
+          "id": "BAN-1",
+          "predicate": "case-direct-opinion-access",
+          "value": false
+        },
+        {
+          "id": "BAN-2",
+          "predicate": "secondary-analysis-says-unborn-issue-assignable",
+          "value": true
+        }
+      ],
+      "limits": [
+        "Do not cite as independently verified original",
+        "No birth count",
+        "No direct witness record",
+        "Unknown whether quoted dicta/holding without original opinion inspection"
+      ]
+    },
+    {
+      "case_id": "JEF1819",
+      "kind": "enslaver-correspondence",
+      "case": "Thomas Jefferson to Joel Yancey",
+      "jurisdiction": "Virginia",
+      "decision_year": 1819,
+      "citation": "Jefferson to Joel Yancey, January 17 1819",
+      "source": "https://history-on-trial.lib.lehigh.edu/trial/jefferson/race/primary/2",
+      "related_sources": [
+        "https://www.monticello.org/encyclopedia/the-business-of-slavery-at-monticello",
+        "https://founders.archives.gov/documents/Jefferson/03-13-02-0522"
+      ],
+      "read_status": "contemporary-letter-transcription-read;original-manuscript-not-image-collated",
+      "persons": [
+        {
+          "name": "Thomas Jefferson",
+          "role": "enslaver/instruction author"
+        },
+        {
+          "name": "Joel Yancey",
+          "role": "overseer recipient"
+        }
+      ],
+      "facts": {
+        "author_recounted_infant_deaths": 5,
+        "interval_years_claimed": 4,
+        "reproductive_preference": "raising a child every two years worth more to owner than mother's labor production",
+        "recipient_policy": "instruct overseers to prioritize infant care and survival for owner return"
+      },
+      "legal_rules": [],
+      "court_disposition": null,
+      "source_locator": "Lehigh transcription item 63; Monticello page footnote10; letter dated 1819-01-17",
+      "observations": [
+        {
+          "id": "JEF-1819-1",
+          "predicate": "author-reported-infant-deaths",
+          "value": 5,
+          "location": "letter on recent infant mortality"
+        },
+        {
+          "id": "JEF-1819-2",
+          "predicate": "author-reported-interval-years",
+          "value": 4
+        },
+        {
+          "id": "JEF-1819-3",
+          "predicate": "author-directive-reproductive-survival-over-immediate-labor",
+          "value": true
+        }
+      ],
+      "limits": [
+        "Author's stated explanation not verified cause of deaths",
+        "No verified evidence of actual implementation",
+        "No named compelled conception",
+        "No generalizable mortality rate"
+      ]
+    },
+    {
+      "case_id": "JEF1820",
+      "kind": "enslaver-correspondence",
+      "case": "Thomas Jefferson to John Wayles Eppes",
+      "jurisdiction": "Virginia",
+      "decision_year": 1820,
+      "citation": "Jefferson to Eppes, June 30 1820",
+      "source": "https://encyclopediavirginia.org/primary-documents/letter-from-thomas-jefferson-to-john-wayles-eppes-june-30-1820/",
+      "related_sources": [
+        "https://tjrs.monticello.org/letter/380"
+      ],
+      "read_status": "contemporary-full-letter-transcription-read;archival-excerpt-crosschecked",
+      "persons": [
+        {
+          "name": "Thomas Jefferson",
+          "role": "enslaver/property transfer author"
+        },
+        {
+          "name": "John Wayles Eppes",
+          "role": "recipient involved in property transfer"
+        }
+      ],
+      "facts": {
+        "proposed_transfer_people": 20,
+        "comparison_men_only": 10,
+        "valuation_preference": "woman who bears future child every two years yields capital addition, as against men's labor output",
+        "debt_and_kinship_context": "estate debts and intended family property transfer"
+      },
+      "legal_rules": [],
+      "court_disposition": null,
+      "source_locator": "Letter June 30, 1820: paragraphs after description of Nicholas debt before Bedford land paragraph",
+      "observations": [
+        {
+          "id": "JEF-1820-1",
+          "predicate": "author-proposed-persons-transfer",
+          "value": 20
+        },
+        {
+          "id": "JEF-1820-2",
+          "predicate": "author-claimed-future-child-capital-value",
+          "value": true
+        },
+        {
+          "id": "JEF-1820-3",
+          "predicate": "estate-succession-property-context",
+          "value": true
+        }
+      ],
+      "limits": [
+        "Proposed 20 is not known completed sale without receipt",
+        "No named pregnancy or coerced conception documented",
+        "Market value not quantitatively estimated",
+        "Use June 30 letter date, not secondary mistaken August date"
+      ]
+    }
+  ],
+  "summary_descriptive_not_prevalence": {
+    "original_court_opinions_read": 4,
+    "original_opinions_secondary_only": 1,
+    "enslaver_letters_read_in_transcription": 2,
+    "narrow_reported_child_counts": {
+      "COV1842": 4,
+      "NEL1849": 3,
+      "JOH1848": 7
+    },
+    "forbidden_inferences": [
+      "prevalence of directed breeding",
+      "full historic slave infant population",
+      "individual consent or maternal preferences",
+      "homogeneous national partus inheritance law",
+      "fourteen independent children as representative sample"
+    ]
+  },
+  "evidence_evaluation": {
+    "source_material": "Historical court and enslaver accounts are themselves instruments of unequal power; they report ownership claims rather than captive persons' complete lives.",
+    "counterevidence": "Smith v Milman explicitly separates maternal inherited status from ownership, and orders Stephen free under an existing manumission deed; rules varied across jurisdictions.",
+    "secondary_nexis_statistic": "Alphonso's report of 212 retrieved cases and nearly 80% in 1830–60 is an UNREPLICATED NexisUNI keyword-search result, not our case-level census.",
+    "minimum_next_actions": [
+      "Retrieve reporter full text of Banks v Marksberry (1823)",
+      "Read Smith v Milman historical full original case scan, compare OCR",
+      "Seek original court docket/will manuscripts for named mothers and offspring",
+      "Expand freedom petitions and survivor testimony, not merely property disputes",
+      "Recover 1820 estate transfer implementation and 1819 infant death records",
+      "Distinguish enslaved women's independent family history from enslavers' accounting"
+    ]
+  },
+  "software_consumer": {
+    "package": "@red-cup-engineering/knowledge-system-server/record-reading",
+    "api": "readJsonRecord(reader,{id,pointers,expectedAddress})",
+    "read_authority": "host-supplied Science checkout root and exact content identity; no live deployment claim"
+  }
+}

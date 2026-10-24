@@ -1,0 +1,13 @@
+{
+  "source": "archive/v0.1.0-release-candidate/publication.json",
+  "files": {
+    "data/births-1790-1859.csv": {
+      "sha256": "9a0c4d25118ec94dc1bc38af73e4901854608e88355d8da2df35794eae63454c",
+      "bytes": 398
+    },
+    "data/us-migration-growth-1790-1860.csv": {
+      "sha256": "ca87a8b4922c7c2d3c3567b4af0864332067bcd629040a1e9355a5df4115c043",
+      "bytes": 372
+    }
+  }
+}

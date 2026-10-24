@@ -1,0 +1,607 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/schema/x402/offer.schema.json",
+  "title": "x402 offer declaration",
+  "description": "One offer an enterprise sells over an x402 boundary: one operation with its contract, one boundary, price terms per rail, the markets it is published to, the ledger account its settlements book to, and the resources it consumes. Every market-facing form of the offer is derived from this declaration and never authored a second time. The deployment supplies the payout address and signing metadata. A native atomic price fixes its exact network and asset; the deployment must agree with that denomination. The compute binding names the typed operation the offer sells, so one market serves every offer from its catalog without per-offer transport code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "gateway",
+    "gatewayPackageName",
+    "section",
+    "operation",
+    "origin",
+    "route",
+    "method",
+    "price",
+    "output",
+    "framings",
+    "ledgerAccount",
+    "markets"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "The offer's own name, independent of any market's framing of it."
+    },
+    "gateway": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64,
+      "description": "The seller gateway that serves this offer; also the gateway component of its income account."
+    },
+    "gatewayPackageName": {
+      "type": "string",
+      "pattern": "^@[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9.-]*$",
+      "description": "The gateway's registry package name."
+    },
+    "section": {
+      "type": "string",
+      "pattern": "^lib/[^\\s]+-services-section(/services/[^\\s]+)?$",
+      "description": "Repository-relative path of the enterprise (services section) that sells this offer."
+    },
+    "operation": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64,
+      "description": "The one operation this offer sells."
+    },
+    "origin": {
+      "type": "string",
+      "pattern": "^https://[A-Za-z0-9.-]+(:[0-9]+)?$",
+      "description": "The public origin the boundary is served from, without a trailing slash."
+    },
+    "route": {
+      "type": "string",
+      "pattern": "^/[A-Za-z0-9\\-._~/{}]*$",
+      "maxLength": 256,
+      "description": "The boundary's absolute path, usable as a Bazaar routeTemplate."
+    },
+    "method": {
+      "enum": [
+        "GET",
+        "POST"
+      ],
+      "description": "The HTTP method the boundary prices."
+    },
+    "price": {
+      "description": "An owner-declared dollar quote or exact atomic consideration in one CAIP-19 EVM ERC-20 asset. Native prices imply no fiat exchange rate; settlement rails must match their exact asset.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^\\$[0-9]+\\.[0-9]{2,6}$",
+          "description": "The price as a United States dollar string with two to six decimals (USDC carries six); the derivations convert it to the settlement asset's atomic units exactly."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "amountAtomic",
+            "asset"
+          ],
+          "properties": {
+            "amountAtomic": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,77})$"
+            },
+            "asset": {
+              "type": "string",
+              "pattern": "^eip155:[1-9][0-9]*/erc20:0x[0-9a-f]{40}$"
+            }
+          }
+        }
+      ]
+    },
+    "bodyExample": {
+      "type": "object",
+      "description": "A working request body, used as the Bazaar discovery example, the 402index probe body, and the seller catalog row's probe body. Required when method is POST."
+    },
+    "bodySchema": {
+      "type": "object",
+      "description": "JSON Schema properties/required for the request body, carried into the Bazaar discovery extension's input schema."
+    },
+    "queryExample": {
+      "type": "object",
+      "description": "Example query parameters for a GET offer."
+    },
+    "querySchema": {
+      "type": "object",
+      "description": "JSON Schema properties/required for a GET offer's query parameters."
+    },
+    "pathParamsSchema": {
+      "type": "object",
+      "description": "JSON Schema properties/required for template path parameters, preserved in Bazaar discovery."
+    },
+    "probeUrl": {
+      "type": "string",
+      "pattern": "^https://[^\\s]+$",
+      "description": "A concrete, probeable URL for a route whose template carries path parameters. Defaults to origin + route."
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "example"
+      ],
+      "properties": {
+        "schema": {
+          "type": "object"
+        },
+        "example": {}
+      },
+      "description": "The response contract: its JSON Schema and one worked example."
+    },
+    "mimeType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The response media type; defaults to application/json."
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "The market category this offer lists under; defaults to data."
+    },
+    "framings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "title",
+          "description",
+          "tags",
+          "serviceName"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "maxLength": 64
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "$comment": "x402 v2 carries this as the payment payload's resource.description, and the Coinbase CDP facilitator refuses a payload whose description is longer than 500 characters ('paymentPayload' is invalid), so every paid call fails at verify (measured 2026-09-27: 500 verifies, 512 is refused)."
+          },
+          "tags": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[\\x20-\\x7e]+$"
+            }
+          },
+          "serviceName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[\\x20-\\x7e]+$"
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      },
+      "description": "One or more market-facing ways of saying the same product. Every derivation takes one framing; the first is the default."
+    },
+    "ledgerAccount": {
+      "type": "string",
+      "pattern": "^Income(?::[A-Z][A-Za-z0-9-]*)+$",
+      "description": "Income account in the declared seller enterprise book. Gateway is a technical routing label, not a book owner."
+    },
+    "markets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "x402-bazaar",
+          "402index",
+          "house-capability-market",
+          "house-seller-catalog"
+        ]
+      },
+      "description": "The markets this offer is published to. A market absent here is a market the projector will not act on."
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "description": "The resources one call of this offer consumes, named plainly."
+    },
+    "listed": {
+      "type": "boolean",
+      "description": "Whether the seller catalog row is listed (gating the assay's exit status). Defaults to true."
+    },
+    "saleStatus": {
+      "enum": [
+        "held",
+        "enabled"
+      ],
+      "description": "Operational sale authorization, independent of public listing visibility. 'held' refuses compute, grants, and payment even if an endpoint path is known. Omitted means the existing enabled behavior for previously received offers."
+    },
+    "compute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package",
+        "export"
+      ],
+      "properties": {
+        "package": {
+          "type": "string",
+          "pattern": "^@[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9.-]*$",
+          "description": "The registry package that owns the function."
+        },
+        "subpath": {
+          "type": "string",
+          "pattern": "^\\./[^\\s]+$",
+          "description": "The package subpath export to import the function from; defaults to the package root."
+        },
+        "export": {
+          "type": "string",
+          "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$",
+          "description": "The named export to call."
+        },
+        "args": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "pattern": "^(body|query|params|env|offer)(\\.[A-Za-z0-9_-]+)*$"
+          },
+          "description": "Dotted paths into the request context {body, query, params, env}, or into the offer declaration itself as offer.<field>, one per positional argument. Defaults to [\"body\"] for POST and to the sole path parameter (or [\"query\"] when there is none) for GET."
+        },
+        "configuration": {
+          "type": "object",
+          "description": "Fixed operation configuration carried by this binding and admitted as part of the offer identity. An argument can project offer.compute.configuration or offer.validate.configuration."
+        }
+      },
+      "description": "The typed operation this offer sells, bound by package, export, and argument projection. A market resolves it by import; a seller supplies no code of its own."
+    },
+    "validate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package",
+        "export"
+      ],
+      "properties": {
+        "package": {
+          "type": "string",
+          "pattern": "^@[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9.-]*$",
+          "description": "The registry package that owns the function."
+        },
+        "subpath": {
+          "type": "string",
+          "pattern": "^\\./[^\\s]+$",
+          "description": "The package subpath export to import the function from; defaults to the package root."
+        },
+        "export": {
+          "type": "string",
+          "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$",
+          "description": "The named export to call."
+        },
+        "args": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "pattern": "^(body|query|params|env|offer)(\\.[A-Za-z0-9_-]+)*$"
+          },
+          "description": "Dotted paths into the request context {body, query, params, env}, or into the offer declaration itself as offer.<field>, one per positional argument. Defaults to [\"body\"] for POST and to the sole path parameter (or [\"query\"] when there is none) for GET."
+        },
+        "configuration": {
+          "type": "object",
+          "description": "Fixed operation configuration carried by this binding and admitted as part of the offer identity. An argument can project offer.compute.configuration or offer.validate.configuration."
+        }
+      },
+      "description": "An admission function, bound the same way, that throws TypeError or RangeError on a malformed request so the market refuses it (422) before any payment challenge is issued."
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "citations"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The epistemic status of what this operation computes (validated instrument, informal heuristic, deterministic derivation, ...)."
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "title"
+            ],
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "doi": {
+                "type": "string",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      },
+      "description": "The scientific standing of the operation, carried with the offer so a buyer can read what the number rests on."
+    },
+    "runtime": {
+      "enum": [
+        "edge",
+        "node"
+      ],
+      "description": "The host runtime the compute binding needs: edge (any fetch-handler host, the default) or node (a Node host, for a compute that shells out or reads the filesystem). A market face that cannot host node computes does not serve them."
+    },
+    "recoverable": {
+      "type": "boolean",
+      "description": "Retain a public paid publication response privately so repeating the same signed request can recover its exact bytes without another charge. Never enable for stateless private customer computations."
+    },
+    "requestMaxBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576,
+      "description": "Maximum UTF-8 bytes in the JSON HTTP request body. The host may apply a smaller explicit ceiling. Defaults to 102400; includes JSON encoding overhead rather than decoded payload bytes."
+    },
+    "requestPricing": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Owner-declared, deterministic commercial request-size tariff. price is the minimum; native x402 requirements carry the exact admitted-body price. Not a physical-energy or measured-resource-cost claim.",
+      "required": [
+        "mode",
+        "includedBytes",
+        "additionalUnitBytes",
+        "additionalUnitAtomic",
+        "maximumAtomic"
+      ],
+      "properties": {
+        "mode": {
+          "const": "canonical-json-byte-bands"
+        },
+        "includedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "additionalUnitBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "additionalUnitAtomic": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,77}$"
+        },
+        "maximumAtomic": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,77}$"
+        }
+      }
+    },
+    "seller": {
+      "type": "object",
+      "required": [
+        "enterprise",
+        "entity",
+        "record"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enterprise": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "entity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "record": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "pattern": "^lib/[^\\\\]+/lib/agency/enterprises/[a-z0-9-]+\\.json$"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "sourceRightsClaim": {
+      "type": "object",
+      "description": "Source-authority claim for data or computation with external dependencies. It is a typed testimony, not a verified licence or proof of resale authority; the independent receiver checks provenance and current permissions before public activation.",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "sourceUrl",
+        "licenseUrl",
+        "permissions",
+        "evidenceNis",
+        "observedAt"
+      ],
+      "properties": {
+        "basis": {
+          "enum": [
+            "producer-owned",
+            "public-domain",
+            "licensed-third-party",
+            "customer-provided"
+          ]
+        },
+        "sourceUrl": {
+          "type": "string",
+          "pattern": "^https://[^\\s]+$"
+        },
+        "licenseUrl": {
+          "type": "string",
+          "pattern": "^https://[^\\s]+$"
+        },
+        "permissions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "execute",
+              "transform",
+              "redistribute",
+              "commercialize",
+              "resell"
+            ]
+          }
+        },
+        "evidenceNis": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^ni:///sha-256;[A-Za-z0-9_-]{43}$"
+          }
+        },
+        "observedAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+        },
+        "restrictions": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "communityGovernance": {
+          "type": "object",
+          "description": "When a dataset is governed by a community or Nation, retain its own nominated actor, usage protocol, purpose, authority evidence and benefit agreement. These are seller-authored claims, not independent permission, endorsement or legal verification; the receiver must check authority, revocation, applicability and actual benefit before activating a paid offer. CARE is not a blanket licence.",
+          "additionalProperties": false,
+          "required": [
+            "authorityActor",
+            "protocolUri",
+            "permittedPurposes",
+            "authorityEvidenceNis",
+            "benefitAgreementNis",
+            "observedAt",
+            "expiresAt"
+          ],
+          "properties": {
+            "authorityActor": {
+              "type": "string",
+              "pattern": "^https://[^\\s]+$"
+            },
+            "protocolUri": {
+              "type": "string",
+              "pattern": "^https://[^\\s]+$"
+            },
+            "permittedPurposes": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 140
+              }
+            },
+            "authorityEvidenceNis": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^ni:///sha-256;[A-Za-z0-9_-]{43}$"
+              }
+            },
+            "benefitAgreementNis": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^ni:///sha-256;[A-Za-z0-9_-]{43}$"
+              }
+            },
+            "observedAt": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+            },
+            "expiresAt": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "POST"
+          }
+        },
+        "required": [
+          "method"
+        ]
+      },
+      "then": {
+        "required": [
+          "bodyExample"
+        ]
+      }
+    }
+  ]
+}

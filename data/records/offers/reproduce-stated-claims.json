@@ -1,0 +1,259 @@
+{
+  "name": "Reproduce stated claims",
+  "gateway": "research-claim-reproduction",
+  "gatewayPackageName": "@red-cup-engineering/research-claim-reproduction-service",
+  "section": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-data-engineering-services-section/services/computer-content-engineering-services-section/services/computer-documents-engineering-services-section/services/research-claim-reproduction-service",
+  "operation": "reproduce-stated-claims",
+  "origin": "https://market.561.group",
+  "route": "/v1/reproduce-stated-claims",
+  "method": "POST",
+  "price": "$0.01",
+  "category": "data",
+  "output": {
+    "schema": {
+      "type": "object",
+      "required": [
+        "results",
+        "total",
+        "agreed",
+        "disagreed",
+        "ok"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "manuscript",
+              "stated",
+              "derived",
+              "agrees",
+              "basis"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "manuscript": {
+                "type": "string"
+              },
+              "stated": {},
+              "derived": {},
+              "agrees": {
+                "type": "boolean"
+              },
+              "basis": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "agreed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disagreed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "example": {
+      "results": [
+        {
+          "id": "respondents",
+          "manuscript": "02-methods",
+          "stated": 50,
+          "derived": 50,
+          "agrees": true,
+          "basis": "sum of the three groups"
+        },
+        {
+          "id": "share-group-a",
+          "manuscript": "03-results",
+          "stated": "24.00",
+          "derived": "24.00",
+          "agrees": true,
+          "basis": "group a / respondents"
+        },
+        {
+          "id": "share-group-b",
+          "manuscript": "03-results",
+          "stated": "60.1",
+          "derived": "60.00",
+          "agrees": false,
+          "basis": "group b / respondents"
+        }
+      ],
+      "total": 3,
+      "agreed": 2,
+      "disagreed": [
+        "share-group-b"
+      ],
+      "ok": false
+    }
+  },
+  "framings": [
+    {
+      "key": "default",
+      "title": "Reproduce stated claims",
+      "description": "Check every number in your paper: recompute each quantitative claim from the source records in exact decimal arithmetic (sums, grouped series, rounded percentages, sensitivity variants) and get back, per claim, the stated value, the derived value and whether they agree.",
+      "tags": [
+        "research",
+        "reproducibility",
+        "verification",
+        "claims",
+        "open-science"
+      ],
+      "serviceName": "reproduce-stated-claims"
+    }
+  ],
+  "ledgerAccount": "Income:Sales:X402:Research-claim-reproduction",
+  "markets": [
+    "x402-bazaar",
+    "402index",
+    "house-capability-market",
+    "house-seller-catalog"
+  ],
+  "seller": {
+    "enterprise": "engineering",
+    "entity": "561-group-llc",
+    "record": {
+      "path": "lib/emsenn/services/561-group/services/engineering-services-section/lib/agency/enterprises/engineering.json",
+      "sha256": "6af4ed9d1e4612b0383267e7ffe0ad028c52164ee3c5136110d434384a29c39f"
+    }
+  },
+  "compute": {
+    "package": "@red-cup-engineering/research-claim-reproduction-service",
+    "subpath": "./reproduce-stated-claims",
+    "export": "reproduceStatedClaims",
+    "args": [
+      "body"
+    ]
+  },
+  "runtime": "edge",
+  "saleStatus": "held",
+  "bodyExample": {
+    "records": {
+      "survey": {
+        "respondents": 50,
+        "byGroup": [
+          12,
+          30,
+          8
+        ]
+      }
+    },
+    "spec": {
+      "specVersion": "1",
+      "records": {
+        "survey": "data/survey.json"
+      },
+      "bindings": {
+        "groups": {
+          "record": "survey",
+          "path": "/byGroup"
+        }
+      },
+      "claims": [
+        {
+          "id": "respondents",
+          "manuscript": "02-methods",
+          "stated": 50,
+          "expression": {
+            "sum": {
+              "ref": "groups"
+            }
+          },
+          "basis": "sum of the three groups"
+        },
+        {
+          "id": "share-group-a",
+          "manuscript": "03-results",
+          "stated": "24.00",
+          "expression": {
+            "percent": {
+              "numerator": {
+                "get": {
+                  "from": {
+                    "ref": "groups"
+                  },
+                  "key": 0
+                }
+              },
+              "denominator": {
+                "pointer": {
+                  "record": "survey",
+                  "path": "/respondents"
+                }
+              },
+              "places": 2
+            }
+          },
+          "basis": "group a / respondents"
+        },
+        {
+          "id": "share-group-b",
+          "manuscript": "03-results",
+          "stated": "60.1",
+          "expression": {
+            "percent": {
+              "numerator": {
+                "get": {
+                  "from": {
+                    "ref": "groups"
+                  },
+                  "key": 1
+                }
+              },
+              "denominator": {
+                "pointer": {
+                  "record": "survey",
+                  "path": "/respondents"
+                }
+              },
+              "places": 2
+            }
+          },
+          "basis": "group b / respondents"
+        }
+      ]
+    }
+  },
+  "bodySchema": {
+    "type": "object",
+    "required": [
+      "spec"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "records": {
+        "type": "object",
+        "description": "Record name (as named in spec.records) to the record's parsed JSON value. Numbers arrive as doubles, so integers beyond 2^53 and decimals with more than 17 significant digits are not exact; use recordTexts for those."
+      },
+      "recordTexts": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Record name to the record's JSON text; every number literal is read exactly. A record is given in records or in recordTexts, not both."
+      },
+      "spec": {
+        "type": "object",
+        "description": "The claim-spec: records, bindings, claims and (for projection) tables and documents. See schemas/claim-spec.schema.json."
+      }
+    }
+  }
+}
