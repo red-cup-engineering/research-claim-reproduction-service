@@ -9,19 +9,22 @@ import { reproduceStatedClaims } from "../scripts/reproduce-stated-claims.mjs";
 import { claimOf, root } from "./helpers.mjs";
 
 const offer = (name) => JSON.parse(readFileSync(join(root, `data/records/offers/${name}.json`), "utf8"));
+const niOfHex = (hex) => `ni:///sha-256;${Buffer.from(hex, "hex").toString("base64url")}`;
 const reproduceBody = offer("reproduce-stated-claims").bodyExample;
 const projectBody = offer("project-derived-tables").bodyExample;
 
-test("projectDerivedTables returns CSV, Pandoc Markdown, sha256 and byte length; same bytes every time", () => {
+test("projectDerivedTables returns CSV, Pandoc Markdown, each with its ni: address, size and media type; same bytes every time", () => {
   const first = projectDerivedTables(projectBody);
   assert.deepEqual(first, projectDerivedTables(JSON.parse(JSON.stringify(projectBody))));
   assert.deepEqual(first.files.map((file) => file.path), ["tables/groups.csv", "tables.md"]);
   const [csv, markdown] = first.files;
+  assert.deepEqual([csv.mediaType, markdown.mediaType], ["text/csv", "text/markdown"]);
   assert.equal(csv.text, "group,n,share_pct\n0,12,24.0\n1,30,60.0\n2,8,16.0\n");
   assert.equal(markdown.text, "# Tables {#tables}\n\nTable: Respondents by group. {#tbl:groups}\n\n| Group | Respondents |\n|---|--:|\n| 0 | 12 |\n| 1 | 30 |\n| 2 | 8 |\n");
   for (const file of first.files) {
-    assert.equal(file.sha256, createHash("sha256").update(file.text).digest("hex"));
-    assert.equal(file.bytes, Buffer.byteLength(file.text));
+    assert.equal(file.ni, niOfHex(createHash("sha256").update(file.text).digest("hex")));
+    assert.equal(file.size, Buffer.byteLength(file.text));
+    assert.equal(file.sha256, undefined);
     assert.equal(file.variants, undefined);
   }
 });
@@ -41,7 +44,7 @@ test("csv cells are quoted per RFC 4180; markdown cells escape pipes; crlfDigest
   const records = { r: { rows: [{ text: 'say "hi", ok', n: 1 }, { text: "a|b", n: 2.5 }] } };
   const { files } = projectDerivedTables({ records, spec });
   assert.equal(files[0].text, '"a,b",n\n"say ""hi"", ok",1\na|b,2.5\n');
-  assert.deepEqual(files[0].variants.crlf.sha256, createHash("sha256").update(files[0].text.replaceAll("\n", "\r\n")).digest("hex"));
+  assert.deepEqual(files[0].variants.crlf, { ni: niOfHex(createHash("sha256").update(files[0].text.replaceAll("\n", "\r\n")).digest("hex")), size: Buffer.byteLength(files[0].text.replaceAll("\n", "\r\n")), mediaType: "text/csv" });
   assert.equal(files[1].text, "intro\n\nTable: T {#tbl:custom}\n\n| a\\|b |\n|:-:|\n| say \"hi\", ok |\n| a\\|b |\n");
 });
 

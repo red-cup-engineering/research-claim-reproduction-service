@@ -7,14 +7,17 @@ import { cpSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
+import { isCell } from "@red-cup-engineering/signcell/cell";
 import { loadSpec } from "../scripts/reproduce-paper-claims.mjs";
+import canonicalJson from "@red-cup-engineering/json-services-section/canonical-json";
 import { projectDerivedTables } from "../scripts/project-derived-tables.mjs";
 import { reproduceStatedClaims } from "../scripts/reproduce-stated-claims.mjs";
 import { paperCopy, paperFixture, root } from "./helpers.mjs";
 
 const cli = (args) => spawnSync(process.execPath, [join(root, "scripts", "reproduce-paper-claims.mjs"), ...args], { encoding: "utf8" });
 const golden = (path) => readFileSync(join(paperFixture, path));
-const GOLDEN_FILES = ["data/derived/births-1790-1859.csv", "data/derived/us-migration-growth-1790-1860.csv", "data/derived/claims.json", "manuscript/90-appendix-a-tables.md"];
+const niOfHex = (hex) => `ni:///sha-256;${Buffer.from(hex, "hex").toString("base64url")}`;
+const GOLDEN_FILES = ["data/derived/births-1790-1859.csv", "data/derived/us-migration-growth-1790-1860.csv", "data/derived/claims.json", "data/derived/claims.cells.json", "manuscript/90-appendix-a-tables.md"];
 
 test("the CLI reproduces every golden output byte for byte and exits 0", () => {
   const directory = paperCopy();
@@ -26,6 +29,7 @@ test("the CLI reproduces every golden output byte for byte and exits 0", () => {
 
 test("claims.json is semantically the Python result: 26 claims, same ids, stated, derived, agrees, basis, in order", () => {
   const produced = JSON.parse(readFileSync(join(paperFixture, "data/derived/claims.json"), "utf8"));
+  assert.equal(readFileSync(join(paperFixture, "data/derived/claims.json"), "utf8"), `${canonicalJson(produced)}\n`, "the results file is RFC 8785 canonical JSON");
   const spec = loadSpec(paperFixture, "claims/claims.json");
   const recordTexts = Object.fromEntries(Object.entries(spec.records).map(([name, path]) => [name, readFileSync(join(paperFixture, path), "utf8")]));
   const { results, total, agreed, ok } = reproduceStatedClaims({ recordTexts, spec });
@@ -44,12 +48,30 @@ test("the CRLF variants reproduce the digests recorded in the v0.1.0 release bun
   assert.equal(csvs.length, 2);
   for (const file of csvs) {
     const recorded = manifest.files[`data/${file.path.split("/").pop()}`];
-    assert.deepEqual(file.variants.crlf, { sha256: recorded.sha256, bytes: recorded.bytes }, file.path);
+    assert.deepEqual(file.variants.crlf, { ni: niOfHex(recorded.sha256), size: recorded.bytes, mediaType: "text/csv" }, file.path);
     assert.equal(createHash("sha256").update(file.text.replaceAll("\n", "\r\n")).digest("hex"), recorded.sha256);
   }
   for (const file of files) {
-    assert.equal(file.sha256, createHash("sha256").update(readFileSync(join(paperFixture, file.path))).digest("hex"), file.path);
-    assert.equal(file.bytes, golden(file.path).length);
+    assert.equal(file.ni, niOfHex(createHash("sha256").update(readFileSync(join(paperFixture, file.path))).digest("hex")), file.path);
+    assert.equal(file.size, golden(file.path).length);
+    assert.equal(file.mediaType, { csv: "text/csv", md: "text/markdown", json: "application/json" }[file.path.split(".").pop()]);
+  }
+});
+
+test("each reproduced claim is also a SignCell cell in claims.cells.json, deterministically", () => {
+  const cells = JSON.parse(golden("data/derived/claims.cells.json"));
+  const results = JSON.parse(golden("data/derived/claims.json"));
+  assert.equal(cells.length, 26);
+  assert.ok(cells.every(isCell));
+  assert.deepEqual(new Set(cells.map((cell) => cell.subject)).size, 1);
+  assert.match(cells[0].subject, /^ni:\/\/\/sha-256;/u);
+  assert.deepEqual(cells.map((cell) => cell.predicate).sort(), results.map((claim) => `urn:claim:${encodeURIComponent(claim.id)}`).sort());
+  for (const cell of cells) {
+    const claim = results.find((candidate) => `urn:claim:${encodeURIComponent(candidate.id)}` === cell.predicate);
+    assert.deepEqual(cell.object, claim.derived);
+    assert.ok(cell.for.every((witness) => /^ni:\/\/\/sha-256;/u.test(witness)) && cell.for.length > 0);
+    assert.deepEqual(cell.against, []);
+    assert.equal(cell.value, undefined, "an agreeing claim is Measured: its value is its presence");
   }
 });
 
@@ -58,7 +80,7 @@ test("--check passes on a reproduced tree and reports drift on an edited or miss
   assert.equal(cli(["--root", directory, "--spec", "claims/claims.json"]).status, 0);
   const clean = cli(["--root", directory, "--spec", "claims/claims.json", "--check"]);
   assert.equal(clean.status, 0, clean.stderr);
-  assert.match(clean.stdout, /checked 4 files, 0 drifted/u);
+  assert.match(clean.stdout, /checked 5 files, 0 drifted/u);
   writeFileSync(join(directory, "data/derived/births-1790-1859.csv"), "edited\n");
   const drifted = cli(["--root", directory, "--spec", "claims/claims.json", "--check"]);
   assert.equal(drifted.status, 1);
@@ -76,6 +98,11 @@ test("a changed record moves the derived value and the CLI exits 1, naming the c
   assert.match(run.stderr, /DISAGREES captive-share-1800-1849-numerator: stated 5167522 derived 5167523/u);
   assert.match(run.stdout, /^\d+\/26 claims reproduced/u);
   const appendix = readFileSync(join(directory, "manuscript/90-appendix-a-tables.md"), "utf8");
+  const cells = JSON.parse(readFileSync(join(directory, "data/derived/claims.cells.json"), "utf8"));
+  const moved = cells.find((cell) => cell.predicate === "urn:claim:captive-share-1800-1849-numerator");
+  assert.equal(moved.object, 5167523);
+  assert.deepEqual(moved.against, [{ kind: "claim-disagreement", stated: 5167522, derived: 5167523 }]);
+  assert.equal(moved.value, undefined, "told for and against: contested, which is its presence");
   assert.match(appendix, /Every quantitative claim in the paper and its derivation \(\d+ of 26 reproduced\)/u);
 });
 

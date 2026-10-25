@@ -1,34 +1,47 @@
-// Exact decimal arithmetic and the value model of the claim-spec language.
-// A number is a Dec: a BigInt unscaled value and a non-negative decimal scale. No binary float
-// takes part in any sum, product, quotient or rounding.
+// The value model of the claim-spec language over the house exact-number service.
+// A number is a Decimal: canonical decimal text that keeps its trailing zeros ("17.20" is not "17.2",
+// because the text is what a claim compares and prints). Every operation is carried out on exact
+// rationals by @red-cup-engineering/exact-number-data-service and written back at a stated scale;
+// no binary float takes part in any sum, product, quotient or rounding, and this module holds no
+// arithmetic of its own.
+import { decimalOfRational, expandDecimalNotation, parseDecimal, rationalOfDecimal, truncateDecimalString } from "@red-cup-engineering/exact-number-data-service/decimal-string";
+import { divide, ratAdd, ratCompare, ratFromInt, ratIsZero, ratMultiply, rationalParts } from "@red-cup-engineering/exact-number-data-service/exact-number";
 
-const TEN = 10n;
-const pow10 = (n) => TEN ** BigInt(n);
+const DECIMAL = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u;
+const NEGATIVE_ZERO = /^-(0(?:\.0*)?)$/u;
 
-export class Dec {
-  constructor(unscaled, scale = 0) {
-    this.unscaled = BigInt(unscaled);
-    this.scale = scale;
+/** A decimal number: canonical text only; the value is its rational, read on demand. */
+export class Decimal {
+  #text;
+  constructor(text) {
+    if (typeof text !== "string" || !DECIMAL.test(text)) throw new TypeError(`not a plain decimal: ${String(text)}`);
+    this.#text = text.replace(NEGATIVE_ZERO, "$1");
     Object.freeze(this);
   }
+  get text() { return this.#text; }
+  get scale() { return parseDecimal(this.#text).frac.length; }
+  get rational() { return rationalOfDecimal(this.#text); }
 }
-export const isDec = (value) => value instanceof Dec;
+export const isDec = (value) => value instanceof Decimal;
 export const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && !isDec(value);
 
 const LITERAL = /^(-?)(0|[1-9][0-9]*)(?:\.([0-9]+))?(?:[eE]([+-]?[0-9]+))?$/u;
+
+/** A decimal from an integer (number or bigint). */
+export const decOf = (integer) => new Decimal(BigInt(integer).toString());
+
+const atScale = (text, scale) => {
+  const { negative, whole, frac } = parseDecimal(text);
+  return `${negative ? "-" : ""}${whole}${scale > 0 ? `.${frac.padEnd(scale, "0")}` : ""}`;
+};
 
 /** Exact value of a JSON number literal, keeping its trailing zeros ("17.20" has scale 2). */
 export function decFromLiteral(text) {
   const match = LITERAL.exec(text);
   if (match === null) throw new TypeError(`not a JSON number literal: ${text}`);
-  const [, sign, whole, fraction = "", exponent = "0"] = match;
-  let unscaled = BigInt(whole + fraction);
-  let scale = fraction.length - Number(exponent);
-  if (scale < 0) {
-    unscaled *= pow10(-scale);
-    scale = 0;
-  }
-  return new Dec(sign === "-" ? -unscaled : unscaled, scale);
+  const [, , , fraction = "", exponent] = match;
+  if (exponent === undefined) return new Decimal(text);
+  return new Decimal(atScale(expandDecimalNotation(text), Math.max(0, fraction.length - Number(exponent))));
 }
 
 /** A JS number read as the shortest decimal that round-trips it (what its JSON literal meant). */
@@ -37,72 +50,42 @@ export function decFromNumber(number) {
   return decFromLiteral(Number.isInteger(number) && Math.abs(number) < 1e21 ? BigInt(number).toString() : String(number));
 }
 
-const digits = (big) => (big < 0n ? -big : big).toString();
-
 /** Canonical decimal text: plain digits, the sign, and exactly `scale` fractional digits. */
-export function decText(dec) {
-  const negative = dec.unscaled < 0n;
-  let body = digits(dec.unscaled);
-  if (dec.scale > 0) {
-    body = body.padStart(dec.scale + 1, "0");
-    body = `${body.slice(0, -dec.scale)}.${body.slice(-dec.scale)}`;
-  }
-  return negative ? `-${body}` : body;
-}
+export const decText = (dec) => dec.text;
 
-const align = (a, b) => {
-  const scale = Math.max(a.scale, b.scale);
-  return [a.unscaled * pow10(scale - a.scale), b.unscaled * pow10(scale - b.scale), scale];
+const wider = (a, b) => Math.max(a.scale, b.scale);
+export const decAdd = (a, b) => new Decimal(decimalOfRational(ratAdd(a.rational, b.rational), wider(a, b)));
+export const decMultiply = (a, b) => new Decimal(decimalOfRational(ratMultiply(a.rational, b.rational), a.scale + b.scale));
+export const decCompare = (a, b) => ratCompare(a.rational, b.rational);
+export const decIsInteger = (dec) => rationalParts(dec.rational)[1] === 1n;
+/** The value of an integer Decimal as a bigint. */
+export const decToBigInt = (dec) => {
+  if (!decIsInteger(dec)) throw new RangeError(`${dec.text} is not an integer`);
+  return rationalParts(dec.rational)[0];
 };
-export const decAdd = (a, b) => { const [x, y, scale] = align(a, b); return new Dec(x + y, scale); };
-export const decMultiply = (a, b) => new Dec(a.unscaled * b.unscaled, a.scale + b.scale);
-export const decCompare = (a, b) => { const [x, y] = align(a, b); return x < y ? -1 : x > y ? 1 : 0; };
-export const decIsInteger = (dec) => dec.unscaled % pow10(dec.scale) === 0n;
 
-/** Quotient of integers n/d (d != 0) rounded to an integer. Modes: half-even, half-up (ties away from zero). */
-export function roundDivide(n, d, mode) {
-  if (d === 0n) throw new RangeError("division by zero");
-  if (d < 0n) { n = -n; d = -d; }
-  const negative = n < 0n;
-  const a = negative ? -n : n;
-  let q = a / d;
-  const twice = 2n * (a % d);
-  if (twice > d || (twice === d && (mode === "half-up" || q % 2n === 1n))) q += 1n;
-  return negative ? -q : q;
-}
-
-export function floorDivide(n, d) {
-  if (d === 0n) throw new RangeError("division by zero");
-  if (d < 0n) { n = -n; d = -d; }
-  const q = n / d;
-  return n % d !== 0n && n < 0n ? q - 1n : q;
-}
-
-/** floor(a / b) as an integer Dec. */
+/** floor(a / b) as an integer Decimal. */
 export function decFloorDivide(a, b) {
-  return new Dec(floorDivide(a.unscaled * pow10(b.scale), b.unscaled * pow10(a.scale)), 0);
+  const [n, d] = rationalParts(divide(a.rational, b.rational)); // d > 0
+  return decOf(n >= 0n ? n / d : -((-n + d - 1n) / d));
 }
 
-/** Round to `places` fractional digits. */
+const ROUNDING = Object.freeze({ "half-even": "half-even", "half-up": "half-away-from-zero" });
+
+/** Round to `places` fractional digits (half-even, or half-up = ties away from zero). */
 export function decRound(dec, places, mode = "half-even") {
-  if (places >= dec.scale) return new Dec(dec.unscaled * pow10(places - dec.scale), places);
-  return new Dec(roundDivide(dec.unscaled, pow10(dec.scale - places), mode), places);
+  return new Decimal(decimalOfRational(dec.rational, places, { rounding: ROUNDING[mode] }));
 }
 
 /** 100 * numerator / denominator, rounded exactly to `places` fractional digits. */
 export function decPercent(numerator, denominator, places, mode = "half-even") {
-  if (denominator.unscaled === 0n) throw new RangeError("percent denominator is zero");
-  const top = numerator.unscaled * 100n * pow10(denominator.scale + places);
-  const bottom = denominator.unscaled * pow10(numerator.scale);
-  return new Dec(roundDivide(top, bottom, mode), places);
+  if (ratIsZero(denominator.rational)) throw new RangeError("percent denominator is zero");
+  const percent = divide(ratMultiply(numerator.rational, ratFromInt(100)), denominator.rational);
+  return new Decimal(decimalOfRational(percent, places, { rounding: ROUNDING[mode] }));
 }
 
-/** Strip trailing fractional zeros, never writing an exponent (Python's Decimal.normalize would). */
-export function decNormalize(dec) {
-  let { unscaled, scale } = dec;
-  while (scale > 0 && unscaled % TEN === 0n) { unscaled /= TEN; scale -= 1; }
-  return new Dec(unscaled, scale);
-}
+/** Strip trailing fractional zeros, never writing an exponent. */
+export const decNormalize = (dec) => new Decimal(truncateDecimalString(dec.text, dec.scale));
 
 export function groupThousands(text) {
   const negative = text.startsWith("-");
@@ -132,8 +115,11 @@ export function parseExactJson(text) {
 /** The value model as plain JSON: integers are numbers, decimals with a fractional part are strings (they keep their digits). */
 export function toPlain(value) {
   if (isDec(value)) {
-    if (value.scale === 0 && value.unscaled >= BigInt(Number.MIN_SAFE_INTEGER) && value.unscaled <= BigInt(Number.MAX_SAFE_INTEGER)) return Number(value.unscaled);
-    return decText(value);
+    if (value.scale === 0) {
+      const whole = rationalParts(value.rational)[0];
+      if (whole >= BigInt(Number.MIN_SAFE_INTEGER) && whole <= BigInt(Number.MAX_SAFE_INTEGER)) return Number(whole);
+    }
+    return value.text;
   }
   if (Array.isArray(value)) return value.map(toPlain);
   if (isObject(value)) return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, toPlain(entry)]));
@@ -143,7 +129,7 @@ export function toPlain(value) {
 /** The text a value compares and prints as: numbers by canonical decimal text, strings as themselves. */
 export function canonicalText(value) {
   if (typeof value === "string") return value;
-  if (isDec(value)) return decText(value);
+  if (isDec(value)) return value.text;
   if (value === null) return "null";
   if (typeof value === "boolean") return String(value);
   return JSON.stringify(toPlain(value));

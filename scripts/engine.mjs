@@ -1,8 +1,10 @@
 // Evaluation of an admitted spec: bindings, claims, table rows, and the text of CSV and Pandoc output.
 // Pure: records arrive as values, text leaves as strings.
 import {
-  Dec, canonicalText, decAdd, decMultiply, decIsInteger, fromPlain, isDec, isObject, parseExactJson, toPlain,
+  canonicalText, decAdd, decIsInteger, decMultiply, decOf, decToBigInt, fromPlain, isDec, isObject, parseExactJson, toPlain,
 } from "./exact.mjs";
+import canonicalJson from "@red-cup-engineering/json-services-section/canonical-json";
+import { encodeCsvRows } from "@red-cup-engineering/csv-services-section/csv-codec";
 import { Evaluator, resolvePointer } from "./language.mjs";
 import { admitSpec } from "./spec.mjs";
 
@@ -36,7 +38,7 @@ export function admitRequest(request, operationName) {
 
 function groupSums(elements, group, label) {
   const width = BigInt(group.width);
-  const scale = new Dec(BigInt(group.scale ?? 1));
+  const scale = decOf(group.scale ?? 1);
   const sums = new Map();
   const seen = new Map();
   for (const element of elements) {
@@ -44,9 +46,10 @@ function groupSums(elements, group, label) {
     if (!isDec(key) || !decIsInteger(key)) throw new RangeError(`${label}: groupBy key must be an integer`);
     const value = resolvePointer(element, group.value, label);
     if (!isDec(value)) throw new RangeError(`${label}: groupBy value must be a number`);
-    const start = (key.unscaled - (((key.unscaled % width) + width) % width));
-    sums.set(start, decAdd(sums.get(start) ?? new Dec(0n), value));
-    seen.set(key.unscaled, (seen.get(key.unscaled) ?? 0) + 1);
+    const at = decToBigInt(key);
+    const start = (at - (((at % width) + width) % width));
+    sums.set(start, decAdd(sums.get(start) ?? decOf(0), value));
+    seen.set(at, (seen.get(at) ?? 0) + 1);
   }
   if (group.require !== undefined) {
     const problems = [];
@@ -100,7 +103,7 @@ function expand(evaluator, iterations, bag, label) {
       if (!Array.isArray(over)) throw new RangeError(`${label}: forEach/iterate over needs an array`);
       over.forEach((element, position) => {
         const inner = scope.child().define(iteration.as, element);
-        if (iteration.index !== undefined) inner.define(iteration.index, new Dec(BigInt(position)));
+        if (iteration.index !== undefined) inner.define(iteration.index, decOf(position));
         next.push(inner);
       });
     }
@@ -146,7 +149,8 @@ export function summarizeClaims(results) {
   return { total: results.length, agreed: results.length - disagreed.length, disagreed, ok: disagreed.length === 0 };
 }
 
-export const resultsText = (results) => `${JSON.stringify(toPlain(results), null, 2)}\n`;
+/** The claim results as RFC 8785 canonical JSON (sorted keys, no insignificant whitespace) and a final newline. */
+export const resultsText = (results) => `${canonicalJson(toPlain(results))}\n`;
 
 // ---- tables ------------------------------------------------------------------------------------
 
@@ -159,12 +163,6 @@ function tableRows(evaluator, table, label) {
   return expand(evaluator, table.iterate === undefined ? [] : [table.iterate], table.let, label);
 }
 
-/** RFC 4180 with LF line endings: quote a field holding a comma, quote, CR or LF. */
-export function csvText(rows) {
-  const field = (text) => (/[",\r\n]/u.test(text) ? `"${text.replaceAll('"', '""')}"` : text);
-  return rows.map((row) => `${row.map(field).join(",")}\n`).join("");
-}
-
 const ALIGN_RULE = { left: "---", right: "--:", center: ":-:" };
 const pipeCell = (text) => text.replaceAll("|", "\\|").replace(/\r?\n/gu, " ");
 
@@ -175,7 +173,7 @@ export function projectTable(evaluator, table, index) {
   if (table.csv !== undefined) {
     const rows = [table.csv.columns.map((column) => column.header)];
     for (const scope of scopes) rows.push(table.csv.columns.map((column) => cell(evaluator.evaluate(column.value, scope), `${label} csv column ${column.header}`)));
-    out.csv = csvText(rows);
+    out.csv = encodeCsvRows(rows); // RFC 4180, LF, fields quoted only where needed
   }
   if (table.markdown !== undefined) {
     const { columns, caption, label: tag = `tbl:${table.id}` } = table.markdown;

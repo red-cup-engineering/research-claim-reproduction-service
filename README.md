@@ -69,8 +69,10 @@ JSON:
 }
 ```
 
-**Values and exactness.** Numbers are exact decimals (an unscaled BigInt and a
-scale); no binary float takes part in any sum, product, quotient or rounding.
+**Values and exactness.** Numbers are exact decimals (canonical text that keeps its
+trailing zeros); every operation is carried out by the house
+`@red-cup-engineering/exact-number-data-service` on exact rationals, so no binary
+float takes part in any sum, product, quotient or rounding.
 `percent` rounds exactly, half-even by default or `half-up` (ties away from
 zero). Records read from disk keep every number literal exactly, trailing zeros
 included. A decimal with a fractional part is written to JSON as a **string**
@@ -121,10 +123,11 @@ A result is `{id, manuscript, stated, derived, agrees, basis}`.
 **Tables** are `{id, iterate?, let?, csv?, markdown?}`: one row per element of
 `iterate.over`; `csv: {path, columns: [{header, value}], crlfDigest?}`;
 `markdown: {caption, label?, columns: [{header, align?, value}]}`. CSV is RFC 4180
-with LF line endings (a field with a comma, quote, CR or LF is quoted). Markdown
+with LF line endings (a field with a comma, quote, CR or LF is quoted), written by
+`@red-cup-engineering/csv-services-section`. Markdown
 is a Pandoc pipe table with a `Table: caption {#tbl:id}` line; `|` in a cell is
 escaped. **Documents** are `{path, blocks: [{heading}|{paragraph}|{table}]}`
-joined by blank lines. `crlfDigest` also reports the digest of the CSV with every
+joined by blank lines. `crlfDigest` also reports the address of the CSV with every
 LF replaced by CRLF, for checking legacy release bundles.
 
 ## Operations
@@ -159,12 +162,12 @@ exact. Send `recordTexts` (JSON text) for those.
 ### projectDerivedTables
 
 ~~~js
-export function projectDerivedTables({ records, recordTexts, spec }) // -> { files: [{ path, text, sha256, bytes, variants? }], claims }
+export function projectDerivedTables({ records, recordTexts, spec }) // -> { files: [{ path, text, ni, size, mediaType, variants? }], claims }
 ~~~
 
 - Refusals: as `reproduceStatedClaims`, plus `RangeError` for a column, caption or block that cannot be evaluated (a non-scalar cell, a multi-line caption, an unresolvable pointer).
 - Precondition: as `reproduceStatedClaims`.
-- Postcondition: `files` holds, in order, each table's CSV, the claim results JSON (when `resultsPath` is set) and each document; `text` is the file's exact content (UTF-8, LF), `sha256` its lowercase hex digest, `bytes` its UTF-8 length, and `variants.crlf` the digest of the CRLF rendering when the table asks for `crlfDigest`; `claims` is the `{total, agreed, disagreed, ok}` summary, since the claims table of an appendix is computed from the same results.
+- Postcondition: `files` holds, in order, each table's CSV, the claim results JSON (when `resultsPath` is set) and each document; `text` is the file's exact content (UTF-8, LF), `ni` its RFC 6920 name (`ni:///sha-256;…`, from the house `content-address`), `size` its UTF-8 length, `mediaType` the type its extension names, and `variants.crlf` the same address of the CRLF rendering when the table asks for `crlfDigest`; `claims` is the `{total, agreed, disagreed, ok}` summary, since the claims table of an appendix is computed from the same results.
 - Preserved frame: no input is modified; paths are reported, never written.
 - Effect class: pure. Witness: byte-identity with the golden CSVs, claims JSON and Pandoc appendix of the white-repopulation paper, the v0.1.0 CRLF digests, RFC 4180 quoting tests, and double-run determinism.
 - Command: `project-derived-tables` reads one JSON value per input line and writes one JSON value per output line.
@@ -178,7 +181,9 @@ reproduce-paper-claims --root <paper repo> --spec claims/claims.json [--check]
 - Refusals: exit 2 with the refusal on standard error for an unreadable or non-JSON spec or record, a path outside the root, or any refusal of the operations.
 - Precondition: `--root` is the paper repository; `--spec` is a path inside it.
 - Postcondition: every record the spec names is read from the root; `projectDerivedTables` and `reproduceStatedClaims` run on it; every output file is written (to a temporary name, then renamed) or, with `--check`, compared; each disagreement prints `DISAGREES <id>: stated <s> derived <d>` and each drifted file `DRIFT <path>` on standard error; one summary line on standard output.
-- Preserved frame: records and the spec are never written; only the paths the spec lists under `resultsPath`, `csv.path` and `documents[].path` are.
+- Preserved frame: records and the spec are never written; only the paths the spec lists under `resultsPath`, `csv.path` and `documents[].path` (and, beside `resultsPath`, its SignCell cells file) are.
+- SignCell: when the spec names a `resultsPath`, every reproduced claim is also written as a cell (`@red-cup-engineering/signcell/cell`) to the same path with `.cells.json` (`data/derived/claims.json` -> `data/derived/claims.cells.json`), RFC 8785 canonical JSON, cells in address order. Subject: the `ni:` name of the spec file. Predicate: `urn:claim:` plus the percent-encoded claim id. Object: the derived value (integers as numbers, decimals as their digit strings). Told for: the `ni:` names of the source records. Told against: when the paper's stated value differs, one witness `{kind: "claim-disagreement", stated, derived}`. The cell's value is its presence, so an agreeing claim reads held and a disagreeing claim contested; a cell's address is its triple alone, so the claim's identity does not move when the evidence does.
+- Results text: the `resultsPath` file is RFC 8785 canonical JSON (`@red-cup-engineering/json-services-section/canonical-json`) with a final newline, not indented.
 - Effect class: filesystem (reads records inside the root; writes the declared outputs inside the root). Not sold: it needs the paper's tree.
 - Witness: the golden test runs it on a copy of the paper tree, then `--check`, then edits an output and a record.
 
@@ -206,13 +211,14 @@ package is seated. `test/fixtures/*.schema.json` are copies of the x402 package'
 `test/fixtures/white-repopulation/` is a snapshot of the paper that this service
 generalizes (CC-BY-4.0 data, see its `NOTICE`): its records, its claim-spec
 (`claims/claims.json`, `claims/tables.json`, written as data), the outputs its
-Python reproduction wrote, and the digests of its v0.1.0 release bundle. The
+Python reproduction wrote (its claims JSON since re-written as canonical JSON), and the digests of its v0.1.0 release bundle. The
 tests run the runner on a copy and require byte-identical CSVs, claims JSON and
 `manuscript/90-appendix-a-tables.md`, and the recorded CRLF digests. Set
 `WHITE_REPOPULATION_ROOT` to also `--check` a live working tree.
 
 ## Limitations
 
+- JSON Pointers are RFC 6901 and resolved by the house `resolve-json-pointer`: `~` must be followed by `0` or `1`, and an index into an array must be canonical.
 - Numbers sent as parsed JSON (the command and market faces) are doubles on arrival; use `recordTexts` for exactness beyond 17 significant digits.
 - A decimal result is written to JSON as a string; `percent` with `places: 0` therefore writes the number `13`, not the string `"13"`. `agrees` is unaffected because it compares text.
 - `normalize` strips trailing zeros and never writes an exponent; Python's `Decimal.normalize()` writes `1E+1` for 10, so a spec that reproduces a Python-era file with such a value differs there by design.

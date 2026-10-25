@@ -25,8 +25,9 @@
             "required": [
               "path",
               "text",
-              "sha256",
-              "bytes"
+              "ni",
+              "size",
+              "mediaType"
             ],
             "additionalProperties": false,
             "properties": {
@@ -36,17 +37,23 @@
               "text": {
                 "type": "string"
               },
-              "sha256": {
+              "ni": {
                 "type": "string",
-                "pattern": "^[0-9a-f]{64}$"
+                "pattern": "^ni:///sha-256;[A-Za-z0-9_-]{43}$",
+                "description": "The RFC 6920 name of the file's UTF-8 bytes."
               },
-              "bytes": {
+              "size": {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0,
+                "description": "The file's UTF-8 byte length."
+              },
+              "mediaType": {
+                "type": "string",
+                "description": "The media type the bytes are named as, from the file's extension."
               },
               "variants": {
                 "type": "object",
-                "description": "Legacy renderings of the same file: crlf holds the digest of the text with every LF replaced by CRLF."
+                "description": "Legacy renderings of the same file: crlf holds the address (ni, size, mediaType) of the text with every LF replaced by CRLF."
               }
             }
           }
@@ -86,14 +93,16 @@
         {
           "path": "tables/groups.csv",
           "text": "group,n,share_pct\n0,12,24.0\n1,30,60.0\n2,8,16.0\n",
-          "sha256": "b552501319dbc5b1566850456e034371579fc926ee5d99eed511cd967d9847da",
-          "bytes": 47
+          "ni": "ni:///sha-256;tVJQExnbxbFWaFBFbgNDcVefySbuXZnu1RHNln2YR9o",
+          "size": 47,
+          "mediaType": "text/csv"
         },
         {
           "path": "tables.md",
           "text": "# Tables {#tables}\n\nTable: Respondents by group. {#tbl:groups}\n\n| Group | Respondents |\n|---|--:|\n| 0 | 12 |\n| 1 | 30 |\n| 2 | 8 |\n",
-          "sha256": "98c6488b67f3f477df8539aed390eb85fe46549a9a5e9f66b0fd660a03c44149",
-          "bytes": 130
+          "ni": "ni:///sha-256;mMZIi2fz9HffhTmu05Drhf5GVJqaXp9msP1mCgPEQUk",
+          "size": 130,
+          "mediaType": "text/markdown"
         }
       ],
       "claims": {
@@ -108,7 +117,7 @@
     {
       "key": "default",
       "title": "Project derived tables",
-      "description": "Project the tables a paper prints straight from its source records: deterministic RFC 4180 CSV and Pandoc pipe-table Markdown with captions and labels, each file with its SHA-256, plus the claim-by-claim reproduction table, so the printed numbers are the computed ones.",
+      "description": "Project the tables a paper prints straight from its source records: deterministic RFC 4180 CSV and Pandoc pipe-table Markdown with captions and labels, each file with its RFC 6920 ni: content address, size and media type, plus the claim-by-claim reproduction table, so the printed numbers are the computed ones.",
       "tags": [
         "research",
         "reproducibility",

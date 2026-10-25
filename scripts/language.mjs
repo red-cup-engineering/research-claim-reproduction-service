@@ -1,8 +1,9 @@
 // The claim-spec expression language: a static checker (every problem listed with its path) and an
 // evaluator over exact decimals. Pure: no clock, filesystem, network or randomness.
+import { parseJsonPointer, resolveJsonPointerParts } from "@red-cup-engineering/json-services-section/resolve-json-pointer";
 import {
-  Dec, canonicalText, decAdd, decFloorDivide, decFromNumber, decIsInteger, decMultiply, decNormalize, decPercent,
-  decRound, decText, fromPlain, groupThousands, isDec, isObject, valuesEqual,
+  canonicalText, decAdd, decFloorDivide, decFromNumber, decIsInteger, decMultiply, decNormalize, decOf, decPercent,
+  decRound, decText, decToBigInt, fromPlain, groupThousands, isDec, isObject, valuesEqual,
 } from "./exact.mjs";
 
 export const NAME = /^[A-Za-z][A-Za-z0-9_-]*$/u;
@@ -110,21 +111,13 @@ export function checkWhere(where, path, problems) {
 
 // ---- JSON Pointer ------------------------------------------------------------------------------
 
-export function pointerSteps(pointer) {
-  if (pointer === "") return [];
-  if (!pointer.startsWith("/")) throw new TypeError(`JSON Pointer must be empty or start with /: ${JSON.stringify(pointer)}`);
-  return pointer.slice(1).split("/").map((step) => step.replace(/~1/gu, "/").replace(/~0/gu, "~"));
-}
-
-/** Resolve a JSON Pointer in a model value; throws RangeError at the first missing step. */
+/** Resolve an RFC 6901 JSON Pointer in a model value (the house resolver); throws RangeError at the first missing step. */
 export function resolvePointer(value, pointer, label) {
-  let current = value;
-  for (const step of pointerSteps(pointer)) {
-    if (Array.isArray(current) && /^(0|[1-9][0-9]*)$/u.test(step) && Number(step) < current.length) current = current[Number(step)];
-    else if (isObject(current) && Object.hasOwn(current, step)) current = current[step];
-    else throw new RangeError(`${label}: ${JSON.stringify(pointer)} does not resolve (no ${JSON.stringify(step)})`);
-  }
-  return current;
+  const steps = parseJsonPointer(pointer, { allowFragment: false });
+  const found = resolveJsonPointerParts(value, steps);
+  if (found !== undefined) return found;
+  const missing = steps.findIndex((_, at) => resolveJsonPointerParts(value, steps.slice(0, at + 1)) === undefined);
+  throw new RangeError(`${label}: ${JSON.stringify(pointer)} does not resolve (no ${JSON.stringify(steps[missing])})`);
 }
 
 // ---- evaluation --------------------------------------------------------------------------------
@@ -197,8 +190,9 @@ export class Evaluator {
   }
   index(value, what) {
     this.integer(value, what);
-    if (value.unscaled < 0n || value.unscaled > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError(`${what} must be a non-negative integer`);
-    return Number(value.unscaled);
+    const whole = decToBigInt(value);
+    if (whole < 0n || whole > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError(`${what} must be a non-negative integer`);
+    return Number(whole);
   }
   array(value, what) {
     if (!Array.isArray(value)) throw new RangeError(`${what} must be an array`);
@@ -255,12 +249,12 @@ export class Evaluator {
         }
         throw new RangeError("get: from must be an array or an object");
       }
-      case "sum": return this.array(ev(args), "sum argument").reduce((total, entry) => decAdd(total, this.number(entry, "sum element")), new Dec(0n));
-      case "add": return args.map(ev).reduce((total, entry) => decAdd(total, this.number(entry, "add operand")), new Dec(0n));
-      case "multiply": return args.map(ev).reduce((total, entry) => decMultiply(total, this.number(entry, "multiply operand")), new Dec(1n));
+      case "sum": return this.array(ev(args), "sum argument").reduce((total, entry) => decAdd(total, this.number(entry, "sum element")), decOf(0));
+      case "add": return args.map(ev).reduce((total, entry) => decAdd(total, this.number(entry, "add operand")), decOf(0));
+      case "multiply": return args.map(ev).reduce((total, entry) => decMultiply(total, this.number(entry, "multiply operand")), decOf(1));
       case "subtract": {
         const [a, b] = args.map(ev);
-        return decAdd(this.number(a, "subtract operand"), new Dec(-this.number(b, "subtract operand").unscaled, b.scale));
+        return decAdd(this.number(a, "subtract operand"), decMultiply(this.number(b, "subtract operand"), decOf(-1)));
       }
       case "floorDivide": {
         const numerator = this.number(ev(args.numerator), "floorDivide numerator");
@@ -272,7 +266,7 @@ export class Evaluator {
       case "count": {
         const array = this.array(ev(args.array), "count array");
         const kept = args.where === undefined ? array.length : array.filter((element) => this.matches(element, args.where, scope, label)).length;
-        return new Dec(BigInt(kept));
+        return decOf(kept);
       }
       case "slice": {
         const array = this.array(ev(args.array), "slice array");
@@ -297,7 +291,7 @@ export class Evaluator {
         this.charge(over.length);
         return over.map((element, position) => {
           const inner = scope.child().define(args.as, element);
-          if (args.index !== undefined) inner.define(args.index, new Dec(BigInt(position)));
+          if (args.index !== undefined) inner.define(args.index, decOf(position));
           return this.evaluate(args.to, inner);
         });
       }
@@ -307,7 +301,7 @@ export class Evaluator {
         const count = this.index(ev(args.count), "range count");
         if (count > LIMITS.rangeCount) throw new RangeError(`range count exceeds ${LIMITS.rangeCount}`);
         this.charge(count);
-        return Array.from({ length: count }, (_, position) => decAdd(start, decMultiply(step, new Dec(BigInt(position)))));
+        return Array.from({ length: count }, (_, position) => decAdd(start, decMultiply(step, decOf(position))));
       }
       case "any": case "all": case "find": {
         const array = this.array(ev(args.array), `${operator} array`);

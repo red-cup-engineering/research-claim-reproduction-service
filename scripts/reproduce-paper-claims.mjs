@@ -2,10 +2,14 @@
 // reproduce-paper-claims --root <paper repo> --spec claims/claims.json [--check]
 // Reads the records a claim-spec names from disk, derives every claim, writes (or with --check, compares)
 // every output file, and exits 1 when any claim disagrees with the value the paper states.
+// When the spec names a resultsPath, each reproduced claim is also written as a SignCell cell beside it
+// (claims.json -> claims.cells.json); see claim-cells.mjs.
 import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
+import { addressContent } from "@red-cup-engineering/computer-content-address-engineering-services-section/content-address";
 import { admitRequest, evaluateClaims } from "./engine.mjs";
+import { cellsText, claimCells } from "./claim-cells.mjs";
 import { canonicalText } from "./exact.mjs";
 import { isSafeRelativePath } from "./spec.mjs";
 import { projectDerivedTables } from "./project-derived-tables.mjs";
@@ -20,6 +24,9 @@ function readInside(root, relative, what) {
   if (real !== root && !real.startsWith(root + sep)) throw new TypeError(`${what}: ${relative} resolves outside the root`);
   return readFileSync(real, "utf8");
 }
+const niOf = (text) => addressContent(new TextEncoder().encode(text), { mediaType: "application/json" }).ni;
+export const cellsPathOf = (resultsPath) => resultsPath.replace(/(\.json)?$/u, ".cells.json");
+
 function parseJsonFile(text, what) {
   try { return JSON.parse(text); } catch (error) { throw new TypeError(`${what} is not valid JSON: ${error.message}`); }
 }
@@ -53,9 +60,17 @@ export function run({ argv, stdout, stderr, cwd = process.cwd() }) {
     const recordTexts = {};
     for (const [name, path] of Object.entries(spec.records ?? {})) recordTexts[name] = readInside(root, path, `record ${name}`);
     const request = { recordTexts, spec };
-    const { files, claims } = projectDerivedTables(request);
+    const { files: projected, claims } = projectDerivedTables(request);
+    const files = projected.map(({ path, text }) => ({ path, text }));
     const { spec: admitted, records } = admitRequest(request, "reproduce-paper-claims");
-    const failures = evaluateClaims(admitted, records).filter((result) => !result.agrees);
+    const results = evaluateClaims(admitted, records);
+    const failures = results.filter((result) => !result.agrees);
+    if (admitted.resultsPath !== undefined) {
+      const path = cellsPathOf(admitted.resultsPath);
+      if (files.some((file) => file.path === path)) throw new TypeError(`output ${path} is already written by the spec`);
+      const recordNis = Object.fromEntries(Object.entries(recordTexts).map(([name, text]) => [name, niOf(text)]));
+      files.push({ path, text: cellsText(claimCells({ specNi: niOf(readInside(root, values.spec, "spec")), recordNis, results })) });
+    }
     for (const failure of failures) stderr.write(`DISAGREES ${failure.id}: stated ${canonicalText(failure.stated)} derived ${canonicalText(failure.derived)}\n`);
 
     const drift = [];
