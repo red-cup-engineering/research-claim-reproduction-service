@@ -324,3 +324,17 @@ reports slope, intercept, residual sum of squares and R-squared (or undefined
 when the outcome is constant). It does not report regression p-values,
 randomly assigned treatment effects, population representativeness or
 statistical causal identification.
+
+### Registered operation
+
+An explicit statistical-study executable is also declared as
+`analyze-study-statistics` through the same Node operation runner used by
+`reproduce-stated-claims` and `project-derived-tables`. Its input schema is
+`schemas/study-analysis.schema.json`; `operationDefinition` preserves
+`publicationAuthorized: false` and independently unreceived status.
+
+The old package-root index deliberately does **not** eagerly import this
+optional statistical module. Existing paper-claim operations and normal root
+imports remain usable without the new Metrologic peer. Consumers must select
+the new explicit `./analyze-study-statistics` subpath or executable *after*
+its exact upstream Metrologic supplier has been released and installed.

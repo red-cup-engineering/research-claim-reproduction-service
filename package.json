@@ -21,7 +21,8 @@
   "bin": {
     "reproduce-stated-claims": "scripts/reproduce-stated-claims.mjs",
     "project-derived-tables": "scripts/project-derived-tables.mjs",
-    "reproduce-paper-claims": "scripts/reproduce-paper-claims.mjs"
+    "reproduce-paper-claims": "scripts/reproduce-paper-claims.mjs",
+    "analyze-study-statistics": "scripts/analyze-study-statistics.mjs"
   },
   "files": [
     "scripts",

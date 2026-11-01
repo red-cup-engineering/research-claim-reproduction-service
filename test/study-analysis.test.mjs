@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { analyzeStudyStatistics } from "../scripts/analyze-study-statistics.mjs";
+import { analyzeStudyStatistics, operationDefinition } from "../scripts/analyze-study-statistics.mjs";
 
 const study = (analysisMethod = "descriptive") => ({
   id: "urn:study:synthetic",
@@ -167,4 +167,13 @@ test("paired missingness requires disclosure and invalid predictor scales fail",
   assert.throws(()=>analyzeStudyStatistics({study:{...protocol,predictor:{name:"x",measurementLevel:"nominal"}},
     records:[{id:"A",predictor:"1",value:"2"},{id:"B",predictor:"2",value:"3"}]}),
     /regression predictor requires/);
+});
+
+test("statistical study is a registered operation with an authoritative versioned input schema", () => {
+  assert.equal(operationDefinition.name,"analyzeStudyStatistics");
+  assert.equal(operationDefinition.inputSchema.$schema,"https://json-schema.org/draft/2020-12/schema");
+  assert.equal(operationDefinition.inputSchema.allOf.length,6);
+  assert.equal(operationDefinition.outputSchema.properties.scientificReceiving.const,
+    "not-independently-received");
+  assert.equal(operationDefinition.outputSchema.properties.publicationAuthorized.const,false);
 });
