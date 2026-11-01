@@ -177,3 +177,35 @@ test("statistical study is a registered operation with an authoritative versione
     "not-independently-received");
   assert.equal(operationDefinition.outputSchema.properties.publicationAuthorized.const,false);
 });
+
+test("accessor-backed mutable research inputs are rejected before hashing or measurement", () => {
+  let accessed = 0;
+  const row = {id:"case-a",get value() { accessed++; return accessed === 1 ? "1" : "900"; }};
+  assert.throws(() => analyzeStudyStatistics({
+    study:study(),records:[row],
+  }), /own data properties/);
+  assert.equal(accessed,0);
+  let metadataAccessed = 0;
+  const sourceMetadata = { ...study().provenance,
+    get claimedRevision() { metadataAccessed++; return "changed"; },
+  };
+  assert.throws(() => analyzeStudyStatistics({
+    study:{...study(),provenance:sourceMetadata},records:rows(["2","4"]),
+  }), /own data properties/);
+  assert.equal(metadataAccessed,0);
+});
+
+test("cyclic source records, inherited fields and sparse arrays cannot masquerade as a stable dataset", () => {
+  const row={id:"case-a",value:"1"};
+  row.self=row;
+  assert.throws(() => analyzeStudyStatistics({study:study(),records:[row]}),
+    /cyclic data/);
+  const inherited=Object.create({id:"case-a"});
+  inherited.value="1";
+  assert.throws(() => analyzeStudyStatistics({study:study(),records:[inherited]}),
+    /plain JSON records/);
+  const sparse=Array(2);
+  sparse[0]={id:"case-a",value:"1"};
+  assert.throws(() => analyzeStudyStatistics({study:study(),records:sparse}),
+    /dense finite arrays/);
+});

@@ -11,6 +11,62 @@ import {
 } from "@red-cup-engineering/metrologic/statistics/finite-sample";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
 
+/**
+ * Read only own data properties from plain JSON carriers, exactly once.
+ * The resulting deep-frozen copy is used for both source addressing and
+ * arithmetic so an accessor cannot change a measured value across the two.
+ * This is source consistency, NOT provenance authentication or consent.
+ */
+function snapshotStudyInput(input) {
+  const active = new WeakSet();
+  let nodes = 0;
+  const snapshot = (value, depth = 0) => {
+    if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (!value || typeof value !== "object" || depth > 32)
+      throw new TypeError("study input requires bounded plain JSON data");
+    if (++nodes > 150000)
+      throw new RangeError("study input exceeds safe snapshot size");
+    if (active.has(value))
+      throw new TypeError("study input cannot contain cyclic data");
+    const array = Array.isArray(value);
+    const prototype = Object.getPrototypeOf(value);
+    if (array ? prototype !== Array.prototype :
+        prototype !== Object.prototype && prototype !== null)
+      throw new TypeError("study input requires plain JSON records");
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const keys = Reflect.ownKeys(descriptors);
+    const output = array ? [] : {};
+    active.add(value);
+    if (array) {
+      const length = descriptors.length?.value;
+      if (!Number.isSafeInteger(length) || length > 100000 ||
+          keys.length !== length + 1)
+        throw new TypeError("study input requires dense finite arrays");
+      for (let index = 0; index < length; index++) {
+        const property = descriptors[String(index)];
+        if (!property || !Object.hasOwn(property, "value") || !property.enumerable)
+          throw new TypeError("study input requires owned array elements");
+        output.push(snapshot(property.value, depth + 1));
+      }
+    } else {
+      for (const key of keys) {
+        const property = descriptors[key];
+        if (typeof key !== "string" || !property.enumerable ||
+            !Object.hasOwn(property, "value"))
+          throw new TypeError("study input requires own data properties (no accessors)");
+        Object.defineProperty(output, key, {
+          value: snapshot(property.value, depth + 1),
+          enumerable: true, writable: false, configurable: false,
+        });
+      }
+    }
+    active.delete(value);
+    return Object.freeze(output);
+  };
+  return snapshot(input);
+}
+
 const FIELDS = Object.freeze({
   descriptive: ["id", "value"],
   "weighted-descriptive": ["id", "value", "weight"],
@@ -38,7 +94,8 @@ function fields(value, allowed, label) {
 /** The result contains no raw cases, publication grant or statistical significance.
  * Its dataset identity is computed from original records with the existing
  * content-address provider, not invented by a model. */
-export function analyzeStudyStatistics({ study, records }) {
+export function analyzeStudyStatistics(request) {
+  const { study, records } = snapshotStudyInput(request);
   const metadata = object(study, "study");
   fields(metadata, ["id","researchQuestion","population","unitOfAnalysis",
     "analysisMethod","variable","provenance","access","strata",
