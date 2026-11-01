@@ -42,7 +42,8 @@
             "weighted-descriptive",
             "stratified-srswor",
             "coder-agreement",
-            "complete-randomization-test"
+            "complete-randomization-test",
+            "simple-linear-regression"
           ]
         },
         "missingPolicy": {
@@ -152,6 +153,28 @@
         },
         "randomizationStatus": {
           "const": "caller-declares-randomized"
+        },
+        "predictor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "measurementLevel"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/text"
+            },
+            "measurementLevel": {
+              "enum": [
+                "ratio",
+                "interval"
+              ]
+            },
+            "unit": {
+              "$ref": "#/$defs/text"
+            }
+          }
         }
       }
     },
@@ -526,6 +549,121 @@
                 },
                 "treated": {
                   "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "study": {
+            "type": "object",
+            "properties": {
+              "analysisMethod": {
+                "const": "simple-linear-regression"
+              }
+            },
+            "required": [
+              "analysisMethod"
+            ]
+          }
+        },
+        "required": [
+          "study"
+        ]
+      },
+      "then": {
+        "properties": {
+          "study": {
+            "required": [
+              "predictor"
+            ]
+          },
+          "records": {
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "predictor",
+                "value"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/text"
+                },
+                "predictor": {
+                  "oneOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                          "maxLength": 128
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "numerator",
+                            "denominator"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "numerator": {
+                              "type": "string"
+                            },
+                            "denominator": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                          "maxLength": 128
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "numerator",
+                            "denominator"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "numerator": {
+                              "type": "string"
+                            },
+                            "denominator": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
