@@ -312,3 +312,15 @@ from observational exposure groups, or infer population effects. Missing
 outcomes and incomplete/nonrandom assignment are refused. A source-owned,
 independent Science receiver must establish the experimental design and
 community/participant authorization before using any result.
+
+### Descriptive linear regression
+
+The `simple-linear-regression` method measures exact ordinary-least-squares
+association between one declared numeric predictor and an outcome. Each
+case carries a paired predictor and outcome; the analyst must identify both
+measurement levels. Missing paired values fail unless a complete-case
+**descriptive-only** policy is explicitly declared and reported. The source
+reports slope, intercept, residual sum of squares and R-squared (or undefined
+when the outcome is constant). It does not report regression p-values,
+randomly assigned treatment effects, population representativeness or
+statistical causal identification.
