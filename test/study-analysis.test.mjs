@@ -142,3 +142,29 @@ test("unverified, incomplete or convenience allocations cannot silently receive 
     records:[{id:"A",value:1,treated:true},{id:"B",value:2,treated:true}]}),
     /nonempty randomized arms/);
 });
+
+test("exact regression estimates observed association without causal identification", () => {
+  const protocol={...study("simple-linear-regression"),
+    predictor:{name:"input",measurementLevel:"interval",unit:"points"}};
+  const data=[{id:"A",predictor:"1",value:"2"},
+    {id:"B",predictor:"2",value:"4"},{id:"C",predictor:"3",value:"6"}];
+  const result=analyzeStudyStatistics({study:protocol,records:data});
+  assert.deepEqual(result.result.slope,{numerator:"2",denominator:"1"});
+  assert.deepEqual(result.result.rSquared,{numerator:"1",denominator:"1"});
+  assert.equal(result.inferentialStatus,"descriptive-association-not-causal-identification");
+  assert.equal("pValue" in result.result,false);
+});
+test("paired missingness requires disclosure and invalid predictor scales fail", () => {
+  const protocol={...study("simple-linear-regression"),
+    predictor:{name:"input",measurementLevel:"interval"}};
+  const data=[{id:"A",predictor:"1",value:"2"},
+    {id:"B",predictor:null,value:"4"},{id:"C",predictor:"3",value:"6"}];
+  assert.throws(()=>analyzeStudyStatistics({study:protocol,records:data}),/missingness/);
+  const observed=analyzeStudyStatistics({study:{...protocol,missingPolicy:"complete-case-descriptive"},records:data});
+  assert.equal(observed.missingCount,1);
+  assert.equal(observed.analyzedCount,2);
+  assert.deepEqual(observed.result.slope,{numerator:"2",denominator:"1"});
+  assert.throws(()=>analyzeStudyStatistics({study:{...protocol,predictor:{name:"x",measurementLevel:"nominal"}},
+    records:[{id:"A",predictor:"1",value:"2"},{id:"B",predictor:"2",value:"3"}]}),
+    /regression predictor requires/);
+});
