@@ -403,7 +403,7 @@
     ]
   },
   "peerDependencies": {
-    "@red-cup-engineering/metrologic": ">=0.17.0"
+    "@red-cup-engineering/metrologic": ">0.17.0"
   },
   "peerDependenciesMeta": {
     "@red-cup-engineering/metrologic": {
