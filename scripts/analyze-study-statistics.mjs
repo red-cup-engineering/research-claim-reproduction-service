@@ -4,6 +4,7 @@
  */
 import {
   finiteSampleMoments, weightedSampleMean, stratifiedSrsworMean, cohenKappa,
+  completeRandomizationTest,
 } from "@red-cup-engineering/metrologic/statistics/finite-sample";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
 
@@ -11,6 +12,7 @@ const FIELDS = Object.freeze({
   descriptive: ["id", "value"],
   "weighted-descriptive": ["id", "value", "weight"],
   "stratified-srswor": ["id", "value", "stratum"],
+  "complete-randomization-test": ["id", "value", "treated"],
   "coder-agreement": ["id", "coderA", "coderB"],
 });
 function object(value, label) {
@@ -36,7 +38,7 @@ export function analyzeStudyStatistics({ study, records }) {
   const metadata = object(study, "study");
   fields(metadata, ["id","researchQuestion","population","unitOfAnalysis",
     "analysisMethod","variable","provenance","access","strata",
-    "samplingFrame","missingPolicy"], "study");
+    "samplingFrame","missingPolicy","randomizationProtocol","randomizationStatus"], "study");
   const id = string(metadata.id, "study id");
   const researchQuestion = string(metadata.researchQuestion, "research question");
   const population = string(metadata.population, "target population");
@@ -83,9 +85,9 @@ export function analyzeStudyStatistics({ study, records }) {
   if (!["refuse","complete-case-descriptive"].includes(policy))
     throw new TypeError("unknown missing data policy");
   const missing = method !== "coder-agreement" ? rows.filter(row => row.value === null).length : 0;
-  if (missing && (method === "stratified-srswor" || policy !== "complete-case-descriptive"))
+  if (missing && (["stratified-srswor","complete-randomization-test"].includes(method) || policy !== "complete-case-descriptive"))
     throw new TypeError("missingness cannot silently become a population inference");
-  if (method === "stratified-srswor" && policy === "complete-case-descriptive")
+  if (["stratified-srswor","complete-randomization-test"].includes(method) && policy === "complete-case-descriptive")
     throw new TypeError("complete-case dropping cannot certify a probability sample");
   const observed = missing ? rows.filter(row => row.value !== null) : rows;
   if (!observed.length) throw new RangeError("no observed values remain");
@@ -117,6 +119,13 @@ export function analyzeStudyStatistics({ study, records }) {
       throw new TypeError("case refers to an unknown sampling stratum");
     result = stratifiedSrsworMean(strata);
     inferentialStatus = "conditional-on-unverified-SRSWOR-selection-and-complete-response";
+  } else if (method === "complete-randomization-test") {
+    string(metadata.randomizationProtocol, "randomization protocol");
+    if (metadata.randomizationStatus !== "caller-declares-randomized")
+      throw new TypeError("a declared randomized allocation protocol is required");
+    result = completeRandomizationTest(
+      observed.map(row => row.value), observed.map(row => row.treated));
+    inferentialStatus = "conditional-on-unverified-complete-randomization-and-sharp-null";
   } else {
     const categories = variable.categories;
     for (const row of rows)

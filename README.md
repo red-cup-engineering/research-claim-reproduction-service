@@ -298,3 +298,17 @@ Example source-only request:
   "records": [{"id":"case-a","value":"1.25"},{"id":"case-b","value":"2.75"}]
 }
 ```
+
+### Controlled experimental designs
+
+The `complete-randomization-test` analysis method consumes the exact
+bounded Metrologic Fisher randomization test. Cases must have recorded
+outcomes and boolean treatment assignments; metadata must name the source
+randomization protocol and explicitly declare a complete randomized design.
+The computation enumerates all allocations for up to 16 units and reports
+an exact two-sided p-value for the sharp null of *no unit-level effect*.
+It **does not** verify actual randomization, justify causal identification
+from observational exposure groups, or infer population effects. Missing
+outcomes and incomplete/nonrandom assignment are refused. A source-owned,
+independent Science receiver must establish the experimental design and
+community/participant authorization before using any result.

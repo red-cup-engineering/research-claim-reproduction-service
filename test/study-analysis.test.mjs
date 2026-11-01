@@ -112,3 +112,33 @@ test("invalid analysis level, unsupported method, no codebook or bad numbers fai
     /codebook reference/);
   assert.throws(()=>analyzeStudyStatistics({study:study(),records:rows([NaN])}));
 });
+
+test("exact two-sided randomized experiment test never upgrades claimed allocation to causality", () => {
+  const protocol={...study("complete-randomization-test"),
+    randomizationProtocol:"urn:protocol:synthetic-complete-randomization",
+    randomizationStatus:"caller-declares-randomized"};
+  const data=[{id:"A",value:"10",treated:true},{id:"B",value:"10",treated:true},
+    {id:"C",value:"0",treated:false},{id:"D",value:"0",treated:false}];
+  const answer=analyzeStudyStatistics({study:protocol,records:data});
+  assert.deepEqual(answer.result.pValue,{numerator:"1",denominator:"3"});
+  assert.equal(answer.result.enumeratedAllocations,6);
+  assert.equal(answer.inferentialStatus,
+    "conditional-on-unverified-complete-randomization-and-sharp-null");
+  assert.equal(answer.scientificReceiving,"not-independently-received");
+  assert.equal(answer.publicationAuthorized,false);
+});
+
+test("unverified, incomplete or convenience allocations cannot silently receive a randomized p-value", () => {
+  const protocol={...study("complete-randomization-test"),
+    randomizationProtocol:"urn:protocol:synthetic",
+    randomizationStatus:"caller-declares-randomized"};
+  assert.throws(()=>analyzeStudyStatistics({study:{...protocol,randomizationStatus:"convenience-sample"},
+    records:[{id:"A",value:1,treated:true},{id:"B",value:2,treated:false}]}),
+    /declared randomized allocation/);
+  assert.throws(()=>analyzeStudyStatistics({study:protocol,
+    records:[{id:"A",value:null,treated:true},{id:"B",value:2,treated:false}]}),
+    /missingness/);
+  assert.throws(()=>analyzeStudyStatistics({study:protocol,
+    records:[{id:"A",value:1,treated:true},{id:"B",value:2,treated:true}]}),
+    /nonempty randomized arms/);
+});

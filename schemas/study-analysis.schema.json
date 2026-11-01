@@ -41,7 +41,8 @@
             "descriptive",
             "weighted-descriptive",
             "stratified-srswor",
-            "coder-agreement"
+            "coder-agreement",
+            "complete-randomization-test"
           ]
         },
         "missingPolicy": {
@@ -145,6 +146,12 @@
         },
         "samplingFrame": {
           "$ref": "#/$defs/text"
+        },
+        "randomizationProtocol": {
+          "$ref": "#/$defs/text"
+        },
+        "randomizationStatus": {
+          "const": "caller-declares-randomized"
         }
       }
     },
@@ -442,6 +449,83 @@
                 },
                 "coderB": {
                   "$ref": "#/$defs/text"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "study": {
+            "type": "object",
+            "properties": {
+              "analysisMethod": {
+                "const": "complete-randomization-test"
+              }
+            },
+            "required": [
+              "analysisMethod"
+            ]
+          }
+        },
+        "required": [
+          "study"
+        ]
+      },
+      "then": {
+        "properties": {
+          "study": {
+            "required": [
+              "randomizationProtocol",
+              "randomizationStatus"
+            ]
+          },
+          "records": {
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "value",
+                "treated"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/text"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                      "maxLength": 128
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "numerator",
+                        "denominator"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "numerator": {
+                          "type": "string"
+                        },
+                        "denominator": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "treated": {
+                  "type": "boolean"
                 }
               }
             }
