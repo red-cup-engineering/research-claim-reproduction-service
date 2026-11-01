@@ -1,0 +1,114 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { analyzeStudyStatistics } from "../scripts/analyze-study-statistics.mjs";
+
+const study = (analysisMethod = "descriptive") => ({
+  id: "urn:study:synthetic",
+  researchQuestion: "What can be calculated from these cases?",
+  population: "Defined synthetic finite population",
+  unitOfAnalysis: "synthetic-case",
+  analysisMethod,
+  variable: analysisMethod === "coder-agreement"
+    ? { name: "code", measurementLevel: "nominal", categories: ["yes","no"] }
+    : { name: "outcome", measurementLevel: "ratio", unit: "points" },
+  provenance: { datasetId: "urn:dataset:synthetic", claimedRevision: "source-v1",
+    codebookRef: "urn:codebook:synthetic" },
+  access: { analysisPermission: "caller-declares-authorized",
+    privacyPolicy: "aggregates-only" },
+});
+const rows = values => values.map((value, index) => ({id: "case-"+index, value}));
+
+test("descriptive moments do not acquire inferential or publication authority", () => {
+  const answer=analyzeStudyStatistics({study:study(), records:rows(["2","4","6"])});
+  assert.deepEqual(answer.result.mean,{numerator:"4",denominator:"1"});
+  assert.deepEqual(answer.result.sampleVariance,{numerator:"4",denominator:"1"});
+  assert.equal(answer.inferentialStatus,"descriptive-supplied-records-only");
+  assert.equal(answer.scientificReceiving,"not-independently-received");
+  assert.equal(answer.publicationAuthorized,false);
+});
+
+test("missing cases require an explicit descriptive-only policy", () => {
+  const data=rows(["1",null,"3"]);
+  assert.throws(()=>analyzeStudyStatistics({study:study(),records:data}),/missingness/);
+  const answer=analyzeStudyStatistics({study:{...study(),missingPolicy:"complete-case-descriptive"},records:data});
+  assert.equal(answer.missingCount,1);
+  assert.equal(answer.analyzedCount,2);
+  assert.deepEqual(answer.result.mean,{numerator:"2",denominator:"1"});
+});
+
+test("weighted mean and Kish n are descriptive, not a survey design", () => {
+  const data=[{id:"A",value:"1",weight:"1"},{id:"B",value:"3",weight:"3"}];
+  const answer=analyzeStudyStatistics({study:study("weighted-descriptive"),records:data});
+  assert.deepEqual(answer.result.weightedMean,{numerator:"5",denominator:"2"});
+  assert.deepEqual(answer.result.kishEffectiveSampleSize,{numerator:"8",denominator:"5"});
+  assert.match(answer.result.inferenceStatus,/descriptive-only/);
+});
+
+test("stratified finite population survey preserves the exact estimator and unverified design", () => {
+  const experiment={...study("stratified-srswor"),samplingFrame:"urn:frame:synthetic",
+    strata:[{id:"one",populationSize:10},{id:"two",populationSize:10}]};
+  const data=[{id:"A",stratum:"one",value:"2"},{id:"B",stratum:"one",value:"4"},
+    {id:"C",stratum:"two",value:"10"},{id:"D",stratum:"two",value:"14"}];
+  const answer=analyzeStudyStatistics({study:experiment,records:data});
+  assert.deepEqual(answer.result.estimate,{numerator:"15",denominator:"2"});
+  assert.deepEqual(answer.result.estimatedVariance,{numerator:"1",denominator:"1"});
+  assert.match(answer.inferentialStatus,/unverified-SRSWOR/);
+  assert.equal("confidenceInterval" in answer.result,false);
+  assert.equal(answer.publicationAuthorized,false);
+});
+
+test("nonresponse, unknown sampling frames and drop policies fail closed", () => {
+  const experiment={...study("stratified-srswor"),samplingFrame:"urn:frame:synthetic",
+    strata:[{id:"one",populationSize:5}]};
+  assert.throws(()=>analyzeStudyStatistics({study:experiment,
+    records:[{id:"A",stratum:"one",value:null}]}),/missingness/);
+  assert.throws(()=>analyzeStudyStatistics({study:{...experiment,missingPolicy:"complete-case-descriptive"},
+    records:[{id:"A",stratum:"one",value:2}]}),/cannot certify/);
+  assert.throws(()=>analyzeStudyStatistics({study:experiment,
+    records:[{id:"A",stratum:"invented",value:2}]}),/unknown sampling stratum/);
+});
+
+test("codebook-constrained categorical coding can compute agreement, not construct validity", () => {
+  const data=["yes","yes","no","no"].map((coderA,index)=>({
+    id:"case-"+index, coderA, coderB:["yes","no","no","no"][index],
+  }));
+  const answer=analyzeStudyStatistics({study:study("coder-agreement"),records:data});
+  assert.deepEqual(answer.result.kappa,{numerator:"1",denominator:"2"});
+  assert.equal(answer.inferentialStatus,"intercoder-agreement-not-construct-validation");
+  assert.throws(()=>analyzeStudyStatistics({study:study("coder-agreement"),
+    records:[{id:"A",coderA:"yes",coderB:"unlisted"},{id:"B",coderA:"no",coderB:"no"}]}),
+    /codebook categories/);
+});
+
+test("duplicate cases, undeclared sensitive columns and no analysis consent are refused", () => {
+  assert.throws(()=>analyzeStudyStatistics({study:study(),
+    records:[{id:"A",value:2},{id:"A",value:4}]}),/duplicate case/);
+  assert.throws(()=>analyzeStudyStatistics({study:study(),
+    records:[{id:"A",value:2,email:"private@example.org"}]}),/unexpected field/);
+  assert.throws(()=>analyzeStudyStatistics({study:{...study(),
+    access:{analysisPermission:"denied",privacyPolicy:"aggregates-only"}},
+    records:rows([2])}),/aggregate analysis/);
+});
+
+test("computed original content identity can be checked and microdata never appear in the output", () => {
+  const data=[{id:"participant-unique",value:"8"}];
+  const answer=analyzeStudyStatistics({study:study(),records:data});
+  assert.equal(JSON.stringify(answer).includes("participant-unique"),false);
+  assert.equal(answer.provenance.sourceAuthenticity,"not-independently-verified");
+  assert.equal(typeof answer.provenance.computedRecordsAddress,"string");
+  assert.throws(()=>analyzeStudyStatistics({study:{...study(),
+    provenance:{...study().provenance,expectedRecordsAddress:"ni:///sha-256;wrong"}},
+    records:data}),/source content address/);
+});
+
+test("invalid analysis level, unsupported method, no codebook or bad numbers fail", () => {
+  assert.throws(()=>analyzeStudyStatistics({study:{...study(),
+    variable:{name:"outcome",measurementLevel:"nominal"}},records:rows([1])}),
+    /interval or ratio/);
+  assert.throws(()=>analyzeStudyStatistics({study:{...study(),analysisMethod:"predict-causality"},
+    records:rows([1])}),/unknown statistical method/);
+  assert.throws(()=>analyzeStudyStatistics({study:{...study(),
+    provenance:{datasetId:"urn:d",claimedRevision:"source-v1"}},records:rows([1])}),
+    /codebook reference/);
+  assert.throws(()=>analyzeStudyStatistics({study:study(),records:rows([NaN])}));
+});
