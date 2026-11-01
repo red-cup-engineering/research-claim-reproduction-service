@@ -257,7 +257,7 @@ The result clearly separates **calculated** from **established**:
 `publicationAuthorized: false`. Weight concentration is not a survey
 design, coder agreement is not construct validity, and a declared SRSWOR
 sampling method is not proof that recruitment actually used that method.
-No p-values, confidence bounds, randomization tests, causal conclusions
+No observational p-values, confidence bounds, causal conclusions
 or estimates of unmeasured nonresponse bias are manufactured.
 
 The envelope is compatible with social-science practice: UNECE GSBPM 5.2
