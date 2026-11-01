@@ -4,7 +4,7 @@
  */
 import {
   finiteSampleMoments, weightedSampleMean, stratifiedSrsworMean, cohenKappa,
-  completeRandomizationTest,
+  completeRandomizationTest, simpleLinearRegression,
 } from "@red-cup-engineering/metrologic/statistics/finite-sample";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
 
@@ -13,6 +13,7 @@ const FIELDS = Object.freeze({
   "weighted-descriptive": ["id", "value", "weight"],
   "stratified-srswor": ["id", "value", "stratum"],
   "complete-randomization-test": ["id", "value", "treated"],
+  "simple-linear-regression": ["id", "predictor", "value"],
   "coder-agreement": ["id", "coderA", "coderB"],
 });
 function object(value, label) {
@@ -38,7 +39,7 @@ export function analyzeStudyStatistics({ study, records }) {
   const metadata = object(study, "study");
   fields(metadata, ["id","researchQuestion","population","unitOfAnalysis",
     "analysisMethod","variable","provenance","access","strata",
-    "samplingFrame","missingPolicy","randomizationProtocol","randomizationStatus"], "study");
+    "samplingFrame","missingPolicy","randomizationProtocol","randomizationStatus","predictor"], "study");
   const id = string(metadata.id, "study id");
   const researchQuestion = string(metadata.researchQuestion, "research question");
   const population = string(metadata.population, "target population");
@@ -84,12 +85,15 @@ export function analyzeStudyStatistics({ study, records }) {
   const policy = metadata.missingPolicy ?? "refuse";
   if (!["refuse","complete-case-descriptive"].includes(policy))
     throw new TypeError("unknown missing data policy");
-  const missing = method !== "coder-agreement" ? rows.filter(row => row.value === null).length : 0;
+  const missing = method !== "coder-agreement"
+    ? rows.filter(row => row.value === null ||
+        (method === "simple-linear-regression" && row.predictor === null)).length : 0;
   if (missing && (["stratified-srswor","complete-randomization-test"].includes(method) || policy !== "complete-case-descriptive"))
     throw new TypeError("missingness cannot silently become a population inference");
   if (["stratified-srswor","complete-randomization-test"].includes(method) && policy === "complete-case-descriptive")
     throw new TypeError("complete-case dropping cannot certify a probability sample");
-  const observed = missing ? rows.filter(row => row.value !== null) : rows;
+  const observed = missing ? rows.filter(row => row.value !== null &&
+    (method !== "simple-linear-regression" || row.predictor !== null)) : rows;
   if (!observed.length) throw new RangeError("no observed values remain");
   const computedRecordsAddress = semanticId(records);
   if (provenance.expectedRecordsAddress !== undefined &&
@@ -119,6 +123,15 @@ export function analyzeStudyStatistics({ study, records }) {
       throw new TypeError("case refers to an unknown sampling stratum");
     result = stratifiedSrsworMean(strata);
     inferentialStatus = "conditional-on-unverified-SRSWOR-selection-and-complete-response";
+  } else if (method === "simple-linear-regression") {
+    const predictor = object(metadata.predictor, "regression predictor");
+    fields(predictor, ["name","measurementLevel","unit"], "regression predictor");
+    string(predictor.name, "predictor name");
+    if (!["ratio","interval"].includes(predictor.measurementLevel))
+      throw new TypeError("regression predictor requires interval or ratio measurements");
+    result = simpleLinearRegression(observed.map(row => row.predictor),
+      observed.map(row => row.value));
+    inferentialStatus = "descriptive-association-not-causal-identification";
   } else if (method === "complete-randomization-test") {
     string(metadata.randomizationProtocol, "randomization protocol");
     if (metadata.randomizationStatus !== "caller-declares-randomized")
@@ -139,7 +152,16 @@ export function analyzeStudyStatistics({ study, records }) {
     studyId: id, researchQuestion, population, unitOfAnalysis,
     variable: Object.freeze({ name: variableName, measurementLevel,
       ...(variable.unit === undefined ? {} : { unit: string(variable.unit,"unit") }) }),
-    analysisMethod: method, recordCount: rows.length,
+    analysisMethod: method,
+    ...(method === "simple-linear-regression" ? {
+      predictor: Object.freeze({
+        name: metadata.predictor.name, measurementLevel: metadata.predictor.measurementLevel,
+        ...(metadata.predictor.unit === undefined ? {} : {
+          unit: string(metadata.predictor.unit,"predictor unit"),
+        }),
+      }),
+    } : {}),
+    recordCount: rows.length,
     analyzedCount: observed.length, missingCount: missing, missingPolicy: policy,
     result, inferentialStatus,
     provenance: Object.freeze({ datasetId, claimedRevision, codebookRef,
