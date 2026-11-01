@@ -14,7 +14,9 @@
     "./reproduce-stated-claims": "./scripts/reproduce-stated-claims.mjs",
     "./project-derived-tables": "./scripts/project-derived-tables.mjs",
     "./reproduce-paper-claims": "./scripts/reproduce-paper-claims.mjs",
-    "./claim-spec.schema.json": "./schemas/claim-spec.schema.json"
+    "./claim-spec.schema.json": "./schemas/claim-spec.schema.json",
+    "./analyze-study-statistics": "./scripts/analyze-study-statistics.mjs",
+    "./study-analysis.schema.json": "./schemas/study-analysis.schema.json"
   },
   "bin": {
     "reproduce-stated-claims": "scripts/reproduce-stated-claims.mjs",
@@ -399,5 +401,13 @@
         }
       }
     ]
+  },
+  "peerDependencies": {
+    "@red-cup-engineering/metrologic": ">=0.17.0"
+  },
+  "peerDependenciesMeta": {
+    "@red-cup-engineering/metrologic": {
+      "optional": true
+    }
   }
 }
