@@ -1,0 +1,460 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:561-group:research:statistical-study-request:v1",
+  "title": "StatisticalStudyAnalysisRequest",
+  "description": "Observed records and an explicit study design. Computation is not independent science receiving, sampling certification, publication authorization, or consent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "study",
+    "records"
+  ],
+  "properties": {
+    "study": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "researchQuestion",
+        "population",
+        "unitOfAnalysis",
+        "analysisMethod",
+        "variable",
+        "provenance",
+        "access"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/text"
+        },
+        "researchQuestion": {
+          "$ref": "#/$defs/text"
+        },
+        "population": {
+          "$ref": "#/$defs/text"
+        },
+        "unitOfAnalysis": {
+          "$ref": "#/$defs/text"
+        },
+        "analysisMethod": {
+          "enum": [
+            "descriptive",
+            "weighted-descriptive",
+            "stratified-srswor",
+            "coder-agreement"
+          ]
+        },
+        "missingPolicy": {
+          "enum": [
+            "refuse",
+            "complete-case-descriptive"
+          ]
+        },
+        "variable": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "measurementLevel"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/text"
+            },
+            "measurementLevel": {
+              "enum": [
+                "nominal",
+                "interval",
+                "ratio"
+              ]
+            },
+            "unit": {
+              "$ref": "#/$defs/text"
+            },
+            "categories": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 128,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/text"
+              }
+            }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "datasetId",
+            "claimedRevision",
+            "codebookRef"
+          ],
+          "properties": {
+            "datasetId": {
+              "$ref": "#/$defs/text"
+            },
+            "claimedRevision": {
+              "$ref": "#/$defs/text"
+            },
+            "codebookRef": {
+              "$ref": "#/$defs/text"
+            },
+            "expectedRecordsAddress": {
+              "$ref": "#/$defs/text"
+            }
+          }
+        },
+        "access": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "analysisPermission",
+            "privacyPolicy"
+          ],
+          "properties": {
+            "analysisPermission": {
+              "const": "caller-declares-authorized"
+            },
+            "privacyPolicy": {
+              "const": "aggregates-only"
+            }
+          }
+        },
+        "strata": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "populationSize"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/text"
+              },
+              "populationSize": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "samplingFrame": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "study": {
+            "type": "object",
+            "properties": {
+              "analysisMethod": {
+                "const": "descriptive"
+              }
+            },
+            "required": [
+              "analysisMethod"
+            ]
+          }
+        },
+        "required": [
+          "study"
+        ]
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "value"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/text"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                          "maxLength": 128
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "numerator",
+                            "denominator"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "numerator": {
+                              "type": "string"
+                            },
+                            "denominator": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "study": {
+            "type": "object",
+            "properties": {
+              "analysisMethod": {
+                "const": "weighted-descriptive"
+              }
+            },
+            "required": [
+              "analysisMethod"
+            ]
+          }
+        },
+        "required": [
+          "study"
+        ]
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "value",
+                "weight"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/text"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                          "maxLength": 128
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "numerator",
+                            "denominator"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "numerator": {
+                              "type": "string"
+                            },
+                            "denominator": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "weight": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                      "maxLength": 128
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "numerator",
+                        "denominator"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "numerator": {
+                          "type": "string"
+                        },
+                        "denominator": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "study": {
+            "type": "object",
+            "properties": {
+              "analysisMethod": {
+                "const": "stratified-srswor"
+              }
+            },
+            "required": [
+              "analysisMethod"
+            ]
+          }
+        },
+        "required": [
+          "study"
+        ]
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "value",
+                "stratum"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/text"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+                      "maxLength": 128
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "numerator",
+                        "denominator"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "numerator": {
+                          "type": "string"
+                        },
+                        "denominator": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "stratum": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "study": {
+            "type": "object",
+            "properties": {
+              "analysisMethod": {
+                "const": "coder-agreement"
+              }
+            },
+            "required": [
+              "analysisMethod"
+            ]
+          }
+        },
+        "required": [
+          "study"
+        ]
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "coderA",
+                "coderB"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/text"
+                },
+                "coderA": {
+                  "$ref": "#/$defs/text"
+                },
+                "coderB": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    }
+  }
+}
