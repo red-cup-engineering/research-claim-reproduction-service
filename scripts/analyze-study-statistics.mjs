@@ -1,3 +1,6 @@
+#!/usr/bin/env node
+import { runCommand } from "./claim-face.mjs";
+import studyAnalysisSchema from "../schemas/study-analysis.schema.json" with { type: "json" };
 /**
  * Source-qualified study statistics over original data and Metrologic arithmetic.
  * All sample selection, rights, and scientific acceptance remain external.
@@ -171,3 +174,26 @@ export function analyzeStudyStatistics({ study, records }) {
     disclosure: "aggregates-only-no-microdata",
   });
 }
+
+export const operationDefinition = Object.freeze({
+  name: "analyzeStudyStatistics",
+  description: "Source-qualified descriptive, survey, coding, experiment and regression statistics; no independent scientific or publication authority.",
+  inputSchema: studyAnalysisSchema,
+  outputSchema: {
+    type: "object",
+    required: ["kind","studyId","result","provenance","inferentialStatus",
+      "scientificReceiving","publicationAuthorized"],
+    properties: {
+      kind: { const: "research.statistics.study-analysis" },
+      studyId: { type: "string" },
+      result: { type: "object" },
+      provenance: { type: "object" },
+      inferentialStatus: { type: "string" },
+      scientificReceiving: { const: "not-independently-received" },
+      publicationAuthorized: { const: false },
+    },
+    additionalProperties: true,
+  },
+});
+export const operation = operationDefinition;
+if (import.meta.main) await runCommand(operationDefinition, analyzeStudyStatistics);
