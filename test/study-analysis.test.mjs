@@ -1,5 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { semanticBytes } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
 import { analyzeStudyStatistics, operationDefinition } from "../scripts/analyze-study-statistics.mjs";
 
 const study = (analysisMethod = "descriptive") => ({
@@ -17,6 +21,35 @@ const study = (analysisMethod = "descriptive") => ({
     privacyPolicy: "aggregates-only" },
 });
 const rows = values => values.map((value, index) => ({id: "case-"+index, value}));
+
+test("direct operation and declared schema both reject unknown request fields", () => {
+  assert.equal(operationDefinition.inputSchema.additionalProperties,false);
+  assert.throws(()=>analyzeStudyStatistics({study:study(),records:rows([1,2]),unexpected:true}),/unexpected field/);
+});
+
+test("real canonical source bytes independently reproduce the reported SHA-256 NI", () => {
+  const records=rows(["0.1","0.2","0.3"]);
+  const expected="ni:///sha-256;"+createHash("sha256").update(semanticBytes(records)).digest("base64url");
+  const answer=analyzeStudyStatistics({study:{...study(),provenance:{...study().provenance,expectedRecordsAddress:expected}},records});
+  assert.equal(answer.provenance.computedRecordsAddress,expected);
+  records[0].value="900";
+  assert.equal(answer.provenance.computedRecordsAddress,expected);
+  assert.notEqual(analyzeStudyStatistics({study:study(),records}).provenance.computedRecordsAddress,expected);
+  assert.throws(()=>analyzeStudyStatistics({study:{...study(),provenance:{...study().provenance,expectedRecordsAddress:expected}},records}),/differ/);
+});
+
+test("native statistics command uses real schema, math and source identity without stubs", () => {
+  const script=fileURLToPath(new URL("../scripts/analyze-study-statistics.mjs",import.meta.url));
+  const valid={study:study(),records:rows(["2","4","6"])};
+  const run=spawnSync(process.execPath,[script],{input:JSON.stringify(valid)+"\n"+JSON.stringify({...valid,unexpected:true})+"\n",encoding:"utf8"});
+  assert.equal(run.status,2,run.stderr);
+  const outputs=run.stdout.trim().split("\n").map(line=>JSON.parse(line));
+  assert.deepEqual(outputs[0],JSON.parse(JSON.stringify(analyzeStudyStatistics(valid))));
+  assert.equal(outputs[1].ok,false);assert.equal(outputs[1].refusal.reason,"InvalidInput");
+  assert.equal(outputs[0].publicationAuthorized,false);
+  const help=spawnSync(process.execPath,[script,"--help"],{encoding:"utf8"});
+  assert.equal(help.status,0,help.stderr);assert.match(help.stdout,/analyzeStudyStatistics/);
+});
 
 test("descriptive moments do not acquire inferential or publication authority", () => {
   const answer=analyzeStudyStatistics({study:study(), records:rows(["2","4","6"])});

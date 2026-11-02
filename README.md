@@ -268,16 +268,18 @@ recruit respondents or implement a full GSBPM research orchestrator.
 Sensitive/community-derived research still requires competent consent,
 CARE/provenance and rights review.
 
-**Unreleased supplier gate.** The Metrologic mathematical subpath exists
-only as source candidate
+**Exact mathematical supplier.** The statistics subpath is provided by
+`@red-cup-engineering/metrologic@0.19.0-dev.0`, integrated in
 [Metrologic PR #8](https://github.com/red-cup-engineering/metrologic/pull/8).
-The new Metrologic peer is intentionally optional until the exact version
-providing that export is published/selected. Existing paper-reproduction
-entrypoints remain independent; this new stats entry must not be represented
-as an installed service until the supplier version, native Node24 package
-suite, packaged import and original research consumer are all received.
+That exact edition is a runtime dependency: this operation owns its arithmetic
+selection rather than requiring applications to supply a compatible peer.
+Installing this package therefore installs its qualified statistical provider
+without an extra caller-side dependency choice. Existing paper-reproduction
+entrypoints remain unchanged and do not eagerly import the statistical module.
+Scientific receiving, source rights and deployment remain separate from package
+installation and arithmetic checks.
 
-Example source-only request:
+Example request using deliberately synthetic records:
 
 ```json
 {
@@ -333,8 +335,8 @@ An explicit statistical-study executable is also declared as
 `schemas/study-analysis.schema.json`; `operationDefinition` preserves
 `publicationAuthorized: false` and independently unreceived status.
 
-The old package-root index deliberately does **not** eagerly import this
-optional statistical module. Existing paper-claim operations and normal root
-imports remain usable without the new Metrologic peer. Consumers must select
-the new explicit `./analyze-study-statistics` subpath or executable *after*
-its exact upstream Metrologic supplier has been released and installed.
+The old package-root index deliberately does **not** eagerly import the
+statistical module. Existing paper-claim operations and normal root exports
+retain their behavior. Consumers select the explicit
+`./analyze-study-statistics` subpath or executable; the package's exact runtime
+dependency supplies the mathematical implementation.

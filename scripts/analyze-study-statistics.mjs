@@ -95,7 +95,9 @@ function fields(value, allowed, label) {
  * Its dataset identity is computed from original records with the existing
  * content-address provider, not invented by a model. */
 export function analyzeStudyStatistics(request) {
-  const { study, records } = snapshotStudyInput(request);
+  const input = object(snapshotStudyInput(request), "study request");
+  fields(input, ["study", "records"], "study request");
+  const { study, records } = input;
   const metadata = object(study, "study");
   fields(metadata, ["id","researchQuestion","population","unitOfAnalysis",
     "analysisMethod","variable","provenance","access","strata",
