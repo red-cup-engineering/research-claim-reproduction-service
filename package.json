@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/research-claim-reproduction-service",
-  "version": "0.2.0",
+  "version": "0.3.0-dev.0",
   "description": "Check every number in your paper: a generic, deterministic engine that recomputes every quantitative claim a research paper states from its source records in exact decimal arithmetic, reports where the stated and derived values disagree, and projects the derived tables (CSV and Pandoc pipe tables) the paper prints. Claims and tables are data, a JSON claim-spec, so the paper repository holds no code.",
   "repository": {
     "type": "git",
@@ -14,12 +14,15 @@
     "./reproduce-stated-claims": "./scripts/reproduce-stated-claims.mjs",
     "./project-derived-tables": "./scripts/project-derived-tables.mjs",
     "./reproduce-paper-claims": "./scripts/reproduce-paper-claims.mjs",
-    "./claim-spec.schema.json": "./schemas/claim-spec.schema.json"
+    "./claim-spec.schema.json": "./schemas/claim-spec.schema.json",
+    "./analyze-study-statistics": "./scripts/analyze-study-statistics.mjs",
+    "./study-analysis.schema.json": "./schemas/study-analysis.schema.json"
   },
   "bin": {
     "reproduce-stated-claims": "scripts/reproduce-stated-claims.mjs",
     "project-derived-tables": "scripts/project-derived-tables.mjs",
-    "reproduce-paper-claims": "scripts/reproduce-paper-claims.mjs"
+    "reproduce-paper-claims": "scripts/reproduce-paper-claims.mjs",
+    "analyze-study-statistics": "scripts/analyze-study-statistics.mjs"
   },
   "files": [
     "scripts",
@@ -35,7 +38,8 @@
     "@red-cup-engineering/exact-number-data-service": "0.1.6",
     "@red-cup-engineering/javascript-node-services-section": "0.4.1",
     "@red-cup-engineering/json-services-section": "0.4.1",
-    "@red-cup-engineering/signcell": "0.12.3"
+    "@red-cup-engineering/signcell": "0.12.3",
+    "@red-cup-engineering/metrologic": "0.19.0-dev.0"
   },
   "devDependencies": {
     "@red-cup-engineering/json-schema-services-section": "0.5.1"
