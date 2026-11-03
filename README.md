@@ -196,9 +196,9 @@ markets (`x402-bazaar`, `402index`, `house-capability-market`,
 enterprise, gateway `research-claim-reproduction`, ledger account
 `Income:Sales:X402:Research-claim-reproduction`, **$0.01 per call**. The same
 terms are in `package.json#x-market` (the autosell declaration of
-[x402-services-section](https://github.com/red-cup-engineering/x402-services-section)
+[x402-computer-networks-engineering-services-section](https://github.com/red-cup-engineering/x402-computer-networks-engineering-services-section)
 PR 18); the test `offers.test.mjs` checks the two agree and, with
-`X402_AUTOSELL_MODULE=/path/to/x402-services-section/src/package-offers.mjs` and
+`X402_AUTOSELL_MODULE=/path/to/x402-computer-networks-engineering-services-section/src/package-offers.mjs` and
 `HOUSE_LIB_ROOT=/path/to/lib/phezi-ochage`, that autosell derives both offers
 from the package alone and `declareOffer` admits them. The hand-written offers
 carry the intended-seat `section`; autosell derives
