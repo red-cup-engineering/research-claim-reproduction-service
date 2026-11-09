@@ -5,7 +5,7 @@
 // no binary float takes part in any sum, product, quotient or rounding, and this module holds no
 // arithmetic of its own.
 import { decimalOfRational, expandDecimalNotation, parseDecimal, rationalOfDecimal, truncateDecimalString } from "@red-cup-engineering/exact-number-data-service/decimal-string";
-import { divide, ratAdd, ratCompare, ratFromInt, ratIsZero, ratMultiply, rationalParts } from "@red-cup-engineering/exact-number-data-service/exact-number";
+import { divide, ratAdd, ratCompare, ratFromInt, ratIsZero, ratMultiply, rationalParts } from "@red-cup-engineering/metrologic/number/exact-number";
 
 const DECIMAL = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u;
 const NEGATIVE_ZERO = /^-(0(?:\.0*)?)$/u;

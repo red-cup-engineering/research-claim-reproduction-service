@@ -9,7 +9,42 @@ import {
   finiteSampleMoments, weightedSampleMean, stratifiedSrsworMean, cohenKappa,
   completeRandomizationTest, simpleLinearRegression,
 } from "@red-cup-engineering/metrologic/statistics/finite-sample";
+import { ratFromInt } from "@red-cup-engineering/metrologic/number/exact-number";
+import { rationalOfDecimal } from "@red-cup-engineering/exact-number-data-service/decimal-string";
+import {
+  hostRatioOfRational, rationalOfHostRatio,
+} from "@red-cup-engineering/exact-number-data-service/wire-ratio";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
+
+const DECIMAL = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u;
+
+function readMeasurement(value) {
+  if (Number.isSafeInteger(value)) return ratFromInt(value);
+  if (typeof value === "string") {
+    if (value.length > 128 || !DECIMAL.test(value))
+      throw new TypeError("measurement must be a bounded canonical decimal string");
+    if ((value.split(".")[1]?.length ?? 0) > 36)
+      throw new RangeError("measurement has more than 36 decimal places");
+    return rationalOfDecimal(value);
+  }
+  if (value && typeof value === "object") {
+    if (typeof value.numerator !== "string" || typeof value.denominator !== "string" ||
+        value.numerator.length > 128 || value.denominator.length > 128)
+      throw new TypeError("measurement ratio exceeds bounded canonical integer fields");
+    return rationalOfHostRatio(value);
+  }
+  throw new TypeError("measurement must be an exact decimal string, safe integer or canonical ratio");
+}
+
+function writeAnalysis(value) {
+  if (value?.kind === "exactNumber.rational") return hostRatioOfRational(value);
+  if (Array.isArray(value)) return Object.freeze(value.map(writeAnalysis));
+  if (value && typeof value === "object")
+    return Object.freeze(Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, writeAnalysis(item)]),
+    ));
+  return value;
+}
 
 /**
  * Read only own data properties from plain JSON carriers, exactly once.
@@ -163,10 +198,10 @@ export function analyzeStudyStatistics(request) {
     throw new TypeError("records differ from the claimed source content address");
   let result, inferentialStatus = "descriptive-supplied-records-only";
   if (method === "descriptive") {
-    result = finiteSampleMoments(observed.map(row => row.value));
+    result = finiteSampleMoments(observed.map(row => readMeasurement(row.value)));
   } else if (method === "weighted-descriptive") {
-    result = weightedSampleMean(observed.map(row => row.value),
-      observed.map(row => row.weight));
+    result = weightedSampleMean(observed.map(row => readMeasurement(row.value)),
+      observed.map(row => readMeasurement(row.weight)));
   } else if (method === "stratified-srswor") {
     string(metadata.samplingFrame, "sampling frame");
     if (!Array.isArray(metadata.strata) || metadata.strata.length < 1 || metadata.strata.length > 128)
@@ -179,7 +214,7 @@ export function analyzeStudyStatistics(request) {
       if (names.has(groupId)) throw new TypeError("duplicate sampling stratum");
       names.add(groupId);
       return { id: groupId, populationSize: s.populationSize,
-        values: observed.filter(row => row.stratum === groupId).map(row => row.value) };
+        values: observed.filter(row => row.stratum === groupId).map(row => readMeasurement(row.value)) };
     });
     if (observed.some(row => !names.has(row.stratum)))
       throw new TypeError("case refers to an unknown sampling stratum");
@@ -191,15 +226,15 @@ export function analyzeStudyStatistics(request) {
     string(predictor.name, "predictor name");
     if (!["ratio","interval"].includes(predictor.measurementLevel))
       throw new TypeError("regression predictor requires interval or ratio measurements");
-    result = simpleLinearRegression(observed.map(row => row.predictor),
-      observed.map(row => row.value));
+    result = simpleLinearRegression(observed.map(row => readMeasurement(row.predictor)),
+      observed.map(row => readMeasurement(row.value)));
     inferentialStatus = "descriptive-association-not-causal-identification";
   } else if (method === "complete-randomization-test") {
     string(metadata.randomizationProtocol, "randomization protocol");
     if (metadata.randomizationStatus !== "caller-declares-randomized")
       throw new TypeError("a declared randomized allocation protocol is required");
     result = completeRandomizationTest(
-      observed.map(row => row.value), observed.map(row => row.treated));
+      observed.map(row => readMeasurement(row.value)), observed.map(row => row.treated));
     inferentialStatus = "conditional-on-unverified-complete-randomization-and-sharp-null";
   } else {
     const categories = variable.categories;
@@ -225,7 +260,7 @@ export function analyzeStudyStatistics(request) {
     } : {}),
     recordCount: rows.length,
     analyzedCount: observed.length, missingCount: missing, missingPolicy: policy,
-    result, inferentialStatus,
+    result: writeAnalysis(result), inferentialStatus,
     provenance: Object.freeze({ datasetId, claimedRevision, codebookRef,
       computedRecordsAddress, sourceAuthenticity: "not-independently-verified" }),
     scientificReceiving: "not-independently-received",
