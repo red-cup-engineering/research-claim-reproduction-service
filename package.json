@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/research-claim-reproduction-service",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Check every number in your paper: a generic, deterministic engine that recomputes every quantitative claim a research paper states from its source records in exact decimal arithmetic, reports where the stated and derived values disagree, and projects the derived tables (CSV and Pandoc pipe tables) the paper prints. Claims and tables are data, a JSON claim-spec, so the paper repository holds no code.",
   "repository": {
     "type": "git",
