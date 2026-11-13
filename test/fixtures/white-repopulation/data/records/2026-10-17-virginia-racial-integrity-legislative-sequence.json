@@ -83,5 +83,5 @@
     "https://encyclopediavirginia.org/primary-documents/colored-persons-and-indians-defined-1930/",
     "https://encyclopediavirginia.org/entries/cook-george-major-1860-1930/"
   ],
-  "consumer": "@red-cup-engineering/knowledge-system-server/record-reading; requires authorized source mount"
+  "consumer": "@red-cup-engineering/cairn/record-reading; requires authorized source mount"
 }

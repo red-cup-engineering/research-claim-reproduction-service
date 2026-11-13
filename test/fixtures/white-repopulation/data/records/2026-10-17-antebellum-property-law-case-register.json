@@ -464,7 +464,7 @@
     ]
   },
   "software_consumer": {
-    "package": "@red-cup-engineering/knowledge-system-server/record-reading",
+    "package": "@red-cup-engineering/cairn/record-reading",
     "api": "readJsonRecord(reader,{id,pointers,expectedAddress})",
     "read_authority": "host-supplied Science checkout root and exact content identity; no live deployment claim"
   }
