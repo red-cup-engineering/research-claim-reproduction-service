@@ -124,7 +124,7 @@ A result is `{id, manuscript, stated, derived, agrees, basis}`.
 `iterate.over`; `csv: {path, columns: [{header, value}], crlfDigest?}`;
 `markdown: {caption, label?, columns: [{header, align?, value}]}`. CSV is RFC 4180
 with LF line endings (a field with a comma, quote, CR or LF is quoted), written by
-`@red-cup-engineering/csv-services-section`. Markdown
+`@red-cup-engineering/csv-engineering-services-section`. Markdown
 is a Pandoc pipe table with a `Table: caption {#tbl:id}` line; `|` in a cell is
 escaped. **Documents** are `{path, blocks: [{heading}|{paragraph}|{table}]}`
 joined by blank lines. `crlfDigest` also reports the address of the CSV with every
@@ -183,7 +183,7 @@ reproduce-paper-claims --root <paper repo> --spec claims/claims.json [--check]
 - Postcondition: every record the spec names is read from the root; `projectDerivedTables` and `reproduceStatedClaims` run on it; every output file is written (to a temporary name, then renamed) or, with `--check`, compared; each disagreement prints `DISAGREES <id>: stated <s> derived <d>` and each drifted file `DRIFT <path>` on standard error; one summary line on standard output.
 - Preserved frame: records and the spec are never written; only the paths the spec lists under `resultsPath`, `csv.path` and `documents[].path` (and, beside `resultsPath`, its SignCell cells file) are.
 - SignCell: when the spec names a `resultsPath`, every reproduced claim is also written as a cell (`@red-cup-engineering/signcell/cell`) to the same path with `.cells.json` (`data/derived/claims.json` -> `data/derived/claims.cells.json`), RFC 8785 canonical JSON, cells in address order. Subject: the `ni:` name of the spec file. Predicate: `urn:claim:` plus the percent-encoded claim id. Object: the derived value (integers as numbers, decimals as their digit strings). Told for: the `ni:` names of the source records. Told against: when the paper's stated value differs, one witness `{kind: "claim-disagreement", stated, derived}`. The cell's value is its presence, so an agreeing claim reads held and a disagreeing claim contested; a cell's address is its triple alone, so the claim's identity does not move when the evidence does.
-- Results text: the `resultsPath` file is RFC 8785 canonical JSON (`@red-cup-engineering/json-services-section/canonical-json`) with a final newline, not indented.
+- Results text: the `resultsPath` file is RFC 8785 canonical JSON (`@red-cup-engineering/json-engineering-services-section/canonical-json`) with a final newline, not indented.
 - Effect class: filesystem (reads records inside the root; writes the declared outputs inside the root). Not sold: it needs the paper's tree.
 - Witness: the golden test runs it on a copy of the paper tree, then `--check`, then edits an output and a record.
 

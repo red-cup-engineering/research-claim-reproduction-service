@@ -1,6 +1,6 @@
 // The claim-spec expression language: a static checker (every problem listed with its path) and an
 // evaluator over exact decimals. Pure: no clock, filesystem, network or randomness.
-import { parseJsonPointer, resolveJsonPointerParts } from "@red-cup-engineering/json-services-section/resolve-json-pointer";
+import { parseJsonPointer, resolveJsonPointerParts } from "@red-cup-engineering/json-engineering-services-section/resolve-json-pointer";
 import {
   canonicalText, decAdd, decFloorDivide, decFromNumber, decIsInteger, decMultiply, decNormalize, decOf, decPercent,
   decRound, decText, decToBigInt, fromPlain, groupThousands, isDec, isObject, valuesEqual,

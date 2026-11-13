@@ -10,7 +10,7 @@
 // The cell's value is its presence, so an agreeing claim reads "told true" (held), and a disagreeing
 // claim, told for by its records and against by the paper's own statement, reads contested.
 // A cell's address is its triple alone: the evidence moving does not move the claim's identity.
-import canonicalJson from "@red-cup-engineering/json-services-section/canonical-json";
+import canonicalJson from "@red-cup-engineering/json-engineering-services-section/canonical-json";
 import { cell, cellSet } from "@red-cup-engineering/signcell/cell";
 import { toPlain } from "./exact.mjs";
 

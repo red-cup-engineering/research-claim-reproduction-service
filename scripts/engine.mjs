@@ -3,8 +3,8 @@
 import {
   canonicalText, decAdd, decIsInteger, decMultiply, decOf, decToBigInt, fromPlain, isDec, isObject, parseExactJson, toPlain,
 } from "./exact.mjs";
-import canonicalJson from "@red-cup-engineering/json-services-section/canonical-json";
-import { encodeCsvRows } from "@red-cup-engineering/csv-services-section/csv-codec";
+import canonicalJson from "@red-cup-engineering/json-engineering-services-section/canonical-json";
+import { encodeCsvRows } from "@red-cup-engineering/csv-engineering-services-section/csv-codec";
 import { Evaluator, resolvePointer } from "./language.mjs";
 import { admitSpec } from "./spec.mjs";
 

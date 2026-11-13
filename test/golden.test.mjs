@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { isCell } from "@red-cup-engineering/signcell/cell";
 import { loadSpec } from "../scripts/reproduce-paper-claims.mjs";
-import canonicalJson from "@red-cup-engineering/json-services-section/canonical-json";
+import canonicalJson from "@red-cup-engineering/json-engineering-services-section/canonical-json";
 import { projectDerivedTables } from "../scripts/project-derived-tables.mjs";
 import { reproduceStatedClaims } from "../scripts/reproduce-stated-claims.mjs";
 import { paperCopy, paperFixture, root } from "./helpers.mjs";

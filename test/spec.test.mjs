@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { validateJsonSchema } from "@red-cup-engineering/json-schema-services-section/validation";
+import { validateJsonSchema } from "@red-cup-engineering/json-schema-engineering-services-section/validation";
 import { OPERATOR_NAMES } from "../scripts/language.mjs";
 import { admitSpec, specProblems } from "../scripts/spec.mjs";
 import { loadSpec } from "../scripts/reproduce-paper-claims.mjs";
