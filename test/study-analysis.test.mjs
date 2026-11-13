@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { semanticBytes } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
+import { semanticBytes } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address-system";
 import { analyzeStudyStatistics, operationDefinition } from "../scripts/analyze-study-statistics.mjs";
 
 const study = (analysisMethod = "descriptive") => ({

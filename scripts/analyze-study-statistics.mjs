@@ -14,7 +14,7 @@ import { rationalOfDecimal } from "@red-cup-engineering/exact-number-data-servic
 import {
   hostRatioOfRational, rationalOfHostRatio,
 } from "@red-cup-engineering/exact-number-data-service/wire-ratio";
-import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
+import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address-system";
 
 const DECIMAL = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u;
 
