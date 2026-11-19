@@ -1,0 +1,1094 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/schema/research-claim-reproduction/claim-spec.schema.json",
+  "title": "Claim spec",
+  "description": "A paper's quantitative claims and derived tables as data (a spec needs records; a separate tables file need not repeat them). Records are named JSON files; bindings select values from them; claims state a value and the expression that derives it; tables project CSV and Pandoc pipe tables. All arithmetic is exact decimal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "specVersion"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "specVersion": {
+      "const": "1"
+    },
+    "description": {
+      "type": "string"
+    },
+    "records": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/name"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//).+$",
+        "description": "A relative path inside the paper repository."
+      },
+      "description": "Record name to its path relative to the paper root."
+    },
+    "bindings": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/name"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "resultsPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//).+$",
+      "description": "Where the claim results JSON is written."
+    },
+    "tables": {
+      "description": "Table specs, or (for the command line runner) the path of a tables file relative to this file.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/table"
+          }
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/document"
+      }
+    }
+  },
+  "$defs": {
+    "name": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "not": {
+        "const": "claimResults"
+      }
+    },
+    "expression": {
+      "description": "A scalar is a literal; an array evaluates each element; an object has exactly one operator key.",
+      "oneOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        {
+          "$ref": "#/$defs/operatorExpression"
+        }
+      ]
+    },
+    "operatorExpression": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "literal"
+          ],
+          "properties": {
+            "literal": {}
+          },
+          "description": "A JSON value, not evaluated. Numbers become exact decimals."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref"
+          ],
+          "properties": {
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "description": "A loop or let variable, else a binding, else (in tables) claimResults."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pointer"
+          ],
+          "properties": {
+            "pointer": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "record",
+                "path"
+              ],
+              "properties": {
+                "record": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "path": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "description": "The value at a JSON Pointer in a named record."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "get"
+          ],
+          "properties": {
+            "get": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "from",
+                "key"
+              ],
+              "properties": {
+                "from": {
+                  "$ref": "#/$defs/expression"
+                },
+                "key": {
+                  "$ref": "#/$defs/expression"
+                },
+                "default": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "An array element by integer index or an object member by string key; default when absent, else a refusal."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sum"
+          ],
+          "properties": {
+            "sum": {
+              "$ref": "#/$defs/expression"
+            }
+          },
+          "description": "Exact sum of an array of numbers."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "add"
+          ],
+          "properties": {
+            "add": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 1
+            }
+          },
+          "description": "Exact sum of the operands."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "multiply"
+          ],
+          "properties": {
+            "multiply": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 1
+            }
+          },
+          "description": "Exact product of the operands."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "subtract"
+          ],
+          "properties": {
+            "subtract": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "description": "First minus second."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "floorDivide"
+          ],
+          "properties": {
+            "floorDivide": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "numerator",
+                "denominator"
+              ],
+              "properties": {
+                "numerator": {
+                  "$ref": "#/$defs/expression"
+                },
+                "denominator": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "Integer floor of numerator / denominator."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "percent"
+          ],
+          "properties": {
+            "percent": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "numerator",
+                "denominator",
+                "places"
+              ],
+              "properties": {
+                "numerator": {
+                  "$ref": "#/$defs/expression"
+                },
+                "denominator": {
+                  "$ref": "#/$defs/expression"
+                },
+                "places": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30
+                },
+                "rounding": {
+                  "enum": [
+                    "half-even",
+                    "half-up"
+                  ]
+                }
+              }
+            }
+          },
+          "description": "100 * numerator / denominator, rounded exactly (half-even by default) to places fractional digits."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "count"
+          ],
+          "properties": {
+            "count": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "array"
+              ],
+              "properties": {
+                "array": {
+                  "$ref": "#/$defs/expression"
+                },
+                "where": {
+                  "$ref": "#/$defs/where"
+                }
+              }
+            }
+          },
+          "description": "Length of an array, or the number of elements matching where."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "slice"
+          ],
+          "properties": {
+            "slice": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "array",
+                "start"
+              ],
+              "properties": {
+                "array": {
+                  "$ref": "#/$defs/expression"
+                },
+                "start": {
+                  "$ref": "#/$defs/expression"
+                },
+                "end": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "Half-open [start, end) slice; out-of-range bounds are refused."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "substitute"
+          ],
+          "properties": {
+            "substitute": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "array",
+                "index",
+                "value"
+              ],
+              "properties": {
+                "array": {
+                  "$ref": "#/$defs/expression"
+                },
+                "index": {
+                  "$ref": "#/$defs/expression"
+                },
+                "value": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "A copy of array with one element replaced."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "concat"
+          ],
+          "properties": {
+            "concat": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 1
+            }
+          },
+          "description": "Concatenation of arrays."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "map"
+          ],
+          "properties": {
+            "map": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "over",
+                "as",
+                "to"
+              ],
+              "properties": {
+                "over": {
+                  "$ref": "#/$defs/expression"
+                },
+                "as": {
+                  "$ref": "#/$defs/name"
+                },
+                "index": {
+                  "$ref": "#/$defs/name"
+                },
+                "to": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "The array of to, evaluated for each element."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "range"
+          ],
+          "properties": {
+            "range": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "start",
+                "step",
+                "count"
+              ],
+              "properties": {
+                "start": {
+                  "$ref": "#/$defs/expression"
+                },
+                "step": {
+                  "$ref": "#/$defs/expression"
+                },
+                "count": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "start, start+step, ... (count values, at most 100000)."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "any"
+          ],
+          "properties": {
+            "any": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "array",
+                "where"
+              ],
+              "properties": {
+                "array": {
+                  "$ref": "#/$defs/expression"
+                },
+                "where": {
+                  "$ref": "#/$defs/where"
+                }
+              }
+            }
+          },
+          "description": "True when some element matches where."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "all"
+          ],
+          "properties": {
+            "all": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "array",
+                "where"
+              ],
+              "properties": {
+                "array": {
+                  "$ref": "#/$defs/expression"
+                },
+                "where": {
+                  "$ref": "#/$defs/where"
+                }
+              }
+            }
+          },
+          "description": "True when every element matches where."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "find"
+          ],
+          "properties": {
+            "find": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "array",
+                "where"
+              ],
+              "properties": {
+                "array": {
+                  "$ref": "#/$defs/expression"
+                },
+                "where": {
+                  "$ref": "#/$defs/where"
+                }
+              }
+            }
+          },
+          "description": "The one element matching where; none or several is a refusal."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format"
+          ],
+          "properties": {
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/$defs/expression"
+                },
+                "places": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30
+                },
+                "rounding": {
+                  "enum": [
+                    "half-even",
+                    "half-up"
+                  ]
+                },
+                "group": {
+                  "type": "boolean"
+                },
+                "booleans": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            }
+          },
+          "description": "Text: a number rounded to places and optionally grouped by thousands; a boolean as [trueLabel, falseLabel]."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normalize"
+          ],
+          "properties": {
+            "normalize": {
+              "$ref": "#/$defs/expression"
+            }
+          },
+          "description": "A number without trailing fractional zeros."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 1
+            }
+          },
+          "description": "Concatenation of scalars as text."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "substring"
+          ],
+          "properties": {
+            "substring": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value",
+                "start"
+              ],
+              "properties": {
+                "value": {
+                  "$ref": "#/$defs/expression"
+                },
+                "start": {
+                  "$ref": "#/$defs/expression"
+                },
+                "end": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "Code-point substring [start, end) of a scalar's text."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "equals"
+          ],
+          "properties": {
+            "equals": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "description": "Deep equality; numbers compare by value."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "if"
+          ],
+          "properties": {
+            "if": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "cond",
+                "then",
+                "else"
+              ],
+              "properties": {
+                "cond": {
+                  "$ref": "#/$defs/expression"
+                },
+                "then": {
+                  "$ref": "#/$defs/expression"
+                },
+                "else": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          },
+          "description": "then or else, by a boolean cond."
+        }
+      ]
+    },
+    "where": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Field (a name, or a JSON Pointer starting with /) to predicates that must all hold.",
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "properties": {
+          "startsWith": {
+            "$ref": "#/$defs/expression"
+          },
+          "equals": {
+            "$ref": "#/$defs/expression"
+          },
+          "notEquals": {
+            "$ref": "#/$defs/expression"
+          }
+        }
+      }
+    },
+    "binding": {
+      "description": "A source (a record value, optionally grouped and sliced) or any expression.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "record"
+          ],
+          "properties": {
+            "record": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "type": "string",
+              "description": "JSON Pointer into the record; omitted is the whole record."
+            },
+            "groupBy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "key",
+                "value",
+                "width"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "JSON Pointer to each element's integer key."
+                },
+                "value": {
+                  "type": "string",
+                  "description": "JSON Pointer to each element's number."
+                },
+                "width": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "scale": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "require": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "from",
+                    "to"
+                  ],
+                  "properties": {
+                    "from": {
+                      "type": "integer"
+                    },
+                    "to": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "description": "Sum values by floor(key / width) * width, ascending, times scale."
+            },
+            "slice": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minItems": 1,
+              "maxItems": 2,
+              "description": "Half-open [start, end) applied last."
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/expression"
+        }
+      ]
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "manuscript",
+        "stated",
+        "expression",
+        "basis"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/expression"
+        },
+        "manuscript": {
+          "$ref": "#/$defs/expression"
+        },
+        "stated": {
+          "$ref": "#/$defs/expression"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "basis": {
+          "$ref": "#/$defs/expression"
+        },
+        "forEach": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "over",
+              "as"
+            ],
+            "properties": {
+              "over": {
+                "$ref": "#/$defs/expression"
+              },
+              "as": {
+                "$ref": "#/$defs/name"
+              },
+              "index": {
+                "$ref": "#/$defs/name"
+              }
+            }
+          }
+        },
+        "let": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/expression"
+          }
+        }
+      },
+      "description": "One claim, or one per combination of forEach iterations. agrees is string equality of the stated and derived values."
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "iterate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "over",
+            "as"
+          ],
+          "properties": {
+            "over": {
+              "$ref": "#/$defs/expression"
+            },
+            "as": {
+              "$ref": "#/$defs/name"
+            },
+            "index": {
+              "$ref": "#/$defs/name"
+            }
+          }
+        },
+        "let": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "csv": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "columns"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//).+$",
+              "description": "A relative path inside the paper repository."
+            },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "header",
+                  "value"
+                ],
+                "properties": {
+                  "header": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/expression"
+                  }
+                }
+              }
+            },
+            "crlfDigest": {
+              "type": "boolean"
+            }
+          }
+        },
+        "markdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "caption",
+            "columns"
+          ],
+          "properties": {
+            "caption": {
+              "$ref": "#/$defs/expression"
+            },
+            "label": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9:_.-]*$"
+            },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "header",
+                  "value"
+                ],
+                "properties": {
+                  "header": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/expression"
+                  },
+                  "align": {
+                    "enum": [
+                      "left",
+                      "right",
+                      "center"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "csv"
+          ]
+        },
+        {
+          "required": [
+            "markdown"
+          ]
+        }
+      ]
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "blocks"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//).+$",
+          "description": "A relative path inside the paper repository."
+        },
+        "blocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "heading"
+                ],
+                "properties": {
+                  "heading": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "level",
+                      "text"
+                    ],
+                    "properties": {
+                      "level": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 6
+                      },
+                      "text": {
+                        "$ref": "#/$defs/expression"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9:_.-]*$"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "paragraph"
+                ],
+                "properties": {
+                  "paragraph": {
+                    "$ref": "#/$defs/expression"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "table"
+                ],
+                "properties": {
+                  "table": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
