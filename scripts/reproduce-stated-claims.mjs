@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { admitRequest, evaluateClaims, summarizeClaims } from "./engine.mjs";
+import { validateRequest, evaluateClaims, summarizeClaims } from "./engine.mjs";
 import { toPlain } from "./exact.mjs";
 import { claimResultSchema, claimSummarySchema, requestProperties, runCommand } from "./claim-face.mjs";
 
@@ -33,7 +33,7 @@ export const operation = operationDefinition;
  * @throws {RangeError} When a claim cannot be evaluated: a missing pointer, an index out of range, division by zero, a duplicate claim id, or the step budget exceeded.
  */
 export function reproduceStatedClaims(request) {
-  const { spec, records } = admitRequest(request, "reproduceStatedClaims");
+  const { spec, records } = validateRequest(request, "reproduceStatedClaims");
   const results = evaluateClaims(spec, records);
   return { results: toPlain(results), ...summarizeClaims(results) };
 }

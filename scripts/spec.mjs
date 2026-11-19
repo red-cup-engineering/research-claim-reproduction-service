@@ -183,7 +183,7 @@ export function specProblems(spec) {
 }
 
 /** @throws {TypeError} listing every problem. */
-export function admitSpec(spec) {
+export function validateSpec(spec) {
   const problems = specProblems(spec);
   if (problems.length > 0) throw new TypeError(`spec is not admissible: ${problems.slice(0, 40).join("; ")}${problems.length > 40 ? `; and ${problems.length - 40} more` : ""}`);
   return spec;
