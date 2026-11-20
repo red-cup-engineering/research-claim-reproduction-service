@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { addressContent } from "@red-cup-engineering/computer-content-address-engineering-services-section/content-address";
-import { validateRequest, projectAll, summarizeClaims } from "./engine.mjs";
+import { admitRequest, projectAll, summarizeClaims } from "./engine.mjs";
 import { claimSummarySchema, requestProperties, runCommand } from "./claim-face.mjs";
 
 export const operationDefinition = {
@@ -56,7 +56,7 @@ export function addressText(text, path) {
  * @throws {RangeError} When a column, caption or block cannot be evaluated (missing pointer, non-scalar cell, division by zero, step budget).
  */
 export function projectDerivedTables(request) {
-  const { spec, records } = validateRequest(request, "projectDerivedTables");
+  const { spec, records } = admitRequest(request, "projectDerivedTables");
   const { files, results } = projectAll(spec, records);
   return {
     files: files.map(({ path, text, crlfDigest }) => ({

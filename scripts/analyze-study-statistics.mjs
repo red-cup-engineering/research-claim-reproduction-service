@@ -156,11 +156,11 @@ export function analyzeStudyStatistics(request) {
       throw new TypeError("duplicate codebook category");
   } else if (!["interval","ratio"].includes(measurementLevel))
     throw new TypeError("numeric statistics require interval or ratio measurements");
-  const origin = object(metadata.provenance, "source provenance");
-  fields(origin, ["datasetId","claimedRevision","codebookRef","expectedRecordsAddress"], "source provenance");
-  const datasetId = string(origin.datasetId, "dataset id");
-  const claimedRevision = string(origin.claimedRevision, "claimed revision");
-  const codebookRef = string(origin.codebookRef, "codebook reference");
+  const provenance = object(metadata.provenance, "source provenance");
+  fields(provenance, ["datasetId","claimedRevision","codebookRef","expectedRecordsAddress"], "source provenance");
+  const datasetId = string(provenance.datasetId, "dataset id");
+  const claimedRevision = string(provenance.claimedRevision, "claimed revision");
+  const codebookRef = string(provenance.codebookRef, "codebook reference");
   const access = object(metadata.access, "data access");
   fields(access, ["analysisPermission","privacyPolicy"], "data access");
   if (access.analysisPermission !== "caller-declares-authorized" ||
@@ -193,8 +193,8 @@ export function analyzeStudyStatistics(request) {
     (method !== "simple-linear-regression" || row.predictor !== null)) : rows;
   if (!observed.length) throw new RangeError("no observed values remain");
   const computedRecordsAddress = semanticId(records);
-  if (origin.expectedRecordsAddress !== undefined &&
-      origin.expectedRecordsAddress !== computedRecordsAddress)
+  if (provenance.expectedRecordsAddress !== undefined &&
+      provenance.expectedRecordsAddress !== computedRecordsAddress)
     throw new TypeError("records differ from the claimed source content address");
   let result, inferentialStatus = "descriptive-supplied-records-only";
   if (method === "descriptive") {

@@ -8,7 +8,7 @@ import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from
 import { dirname, join, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
 import { addressContent } from "@red-cup-engineering/computer-content-address-engineering-services-section/content-address";
-import { validateRequest, evaluateClaims } from "./engine.mjs";
+import { admitRequest, evaluateClaims } from "./engine.mjs";
 import { cellsText, claimCells } from "./claim-cells.mjs";
 import { canonicalText } from "./exact.mjs";
 import { isSafeRelativePath } from "./spec.mjs";
@@ -62,11 +62,11 @@ export function run({ argv, stdout, stderr, cwd = process.cwd() }) {
     const request = { recordTexts, spec };
     const { files: projected, claims } = projectDerivedTables(request);
     const files = projected.map(({ path, text }) => ({ path, text }));
-    const { spec: validated, records } = validateRequest(request, "reproduce-paper-claims");
-    const results = evaluateClaims(validated, records);
+    const { spec: admitted, records } = admitRequest(request, "reproduce-paper-claims");
+    const results = evaluateClaims(admitted, records);
     const failures = results.filter((result) => !result.agrees);
-    if (validated.resultsPath !== undefined) {
-      const path = cellsPathOf(validated.resultsPath);
+    if (admitted.resultsPath !== undefined) {
+      const path = cellsPathOf(admitted.resultsPath);
       if (files.some((file) => file.path === path)) throw new TypeError(`output ${path} is already written by the spec`);
       const recordNis = Object.fromEntries(Object.entries(recordTexts).map(([name, text]) => [name, niOf(text)]));
       files.push({ path, text: cellsText(claimCells({ specNi: niOf(readInside(root, values.spec, "spec")), recordNis, results })) });

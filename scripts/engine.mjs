@@ -6,16 +6,16 @@ import {
 import canonicalJson from "@red-cup-engineering/json-engine/canonical-json";
 import { encodeCsvRows } from "@red-cup-engineering/csv-engineering-services-section/csv-codec";
 import { Evaluator, resolvePointer } from "./language.mjs";
-import { validateSpec } from "./spec.mjs";
+import { admitSpec } from "./spec.mjs";
 
 const REQUEST_KEYS = ["records", "recordTexts", "spec"];
 export const MAX_RECORD_TEXT_BYTES = 16 * 1024 * 1024;
 
 /** Admit a request { records?, recordTexts?, spec } and return the spec and records as values. */
-export function validateRequest(request, operationName) {
+export function admitRequest(request, operationName) {
   if (request === null || typeof request !== "object" || Array.isArray(request)) throw new TypeError(`${operationName} request must be an object with records and spec`);
   for (const key of Object.keys(request)) if (!REQUEST_KEYS.includes(key)) throw new TypeError(`request does not admit ${key}`);
-  const spec = validateSpec(request.spec);
+  const spec = admitSpec(request.spec);
   const records = {};
   const given = request.records ?? {};
   const texts = request.recordTexts ?? {};
