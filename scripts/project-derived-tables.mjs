@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { addressContent } from "@red-cup-engineering/computer-content-address-engineering-services-section/content-address";
+import { addressContent } from "@red-cup-engineering/semiotic-content-address-system";
 import { admitRequest, projectAll, summarizeClaims } from "./engine.mjs";
 import { claimSummarySchema, requestProperties, runCommand } from "./claim-face.mjs";
 

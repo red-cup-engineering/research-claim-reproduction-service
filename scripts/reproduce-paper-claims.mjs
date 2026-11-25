@@ -7,7 +7,7 @@
 import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
-import { addressContent } from "@red-cup-engineering/computer-content-address-engineering-services-section/content-address";
+import { addressContent } from "@red-cup-engineering/semiotic-content-address-system";
 import { admitRequest, evaluateClaims } from "./engine.mjs";
 import { cellsText, claimCells } from "./claim-cells.mjs";
 import { canonicalText } from "./exact.mjs";
